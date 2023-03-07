@@ -2,7 +2,8 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:socket_io_client/socket_io_client.dart';
+//import Providers
+import 'package:gesture_detection_rebuild/provider/control.provider.dart';
 
 import 'widget/modelCameraPrevide.widget.dart';
 
@@ -14,18 +15,14 @@ class CameraPage extends ConsumerStatefulWidget {
 }
 
 class _CameraPageState extends ConsumerState<CameraPage> {
-  final Socket socket = io(
-    'http://10.0.2.2:5000',
-    OptionBuilder().setTransports(['websocket']).disableAutoConnect().build(),
-  );
-
   CameraController? _controller;
   late List<CameraDescription> _cameras;
-  bool isCameraRotate = false;
 
   @override
   void initState() {
     super.initState();
+
+    ref.read(controlProvider);
 
     initCamera();
   }
@@ -65,7 +62,6 @@ class _CameraPageState extends ConsumerState<CameraPage> {
           )
         : ModelCameraPreview(
             cameraController: _controller!,
-            isCameraRotate: isCameraRotate,
           );
   }
 
@@ -73,18 +69,14 @@ class _CameraPageState extends ConsumerState<CameraPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gesture_detection'),
-        // actions: [
-        //   IconButton(
-        //     onPressed: _imageStreamToggle,
-        //     icon:
-        //         _isRun ? const Icon(Icons.pause) : const Icon(Icons.play_arrow),
-        //   ),
-        //   IconButton(
-        //     onPressed: () => _navigateAndDisplaySelection(context),
-        //     icon: const Icon(Icons.settings),
-        //   ),
-        // ],
+        title: const Text('Gesture Detection'),
+        actions: [
+          IconButton(
+            onPressed: () =>
+                ref.read(controlProvider.notifier).toggleCameraRotate(),
+            icon: const Icon(Icons.rotate_right),
+          ),
+        ],
       ),
       body: getCameraPreviewWidget(),
     );

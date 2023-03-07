@@ -4,16 +4,17 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+//import Providers
+import 'package:gesture_detection_rebuild/provider/control.provider.dart';
+
 class ModelCameraPreview extends ConsumerWidget {
-  const ModelCameraPreview(
-      {super.key,
-      required this.cameraController,
-      required this.isCameraRotate});
+  const ModelCameraPreview({super.key, required this.cameraController});
   final CameraController cameraController;
-  final bool isCameraRotate;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final Control control = ref.watch(controlProvider);
+
     final widgetSize = MediaQuery.of(context).size;
     final scale =
         1 / (cameraController.value.aspectRatio * widgetSize.aspectRatio);
@@ -25,13 +26,12 @@ class ModelCameraPreview extends ConsumerWidget {
         child: Stack(
           children: [
             Transform.rotate(
-              angle: (isCameraRotate ? -90 : 0) * math.pi / 180,
+              angle: (control.isCameraRotate ? -90 : 0) * math.pi / 180,
               child: Transform.scale(
                 scale: scale,
                 child: CameraPreview(cameraController),
               ),
             ),
-            Text(isCameraRotate ? 'True' : 'False'),
           ],
         ),
       ),
