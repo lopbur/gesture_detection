@@ -22,8 +22,6 @@ class _CameraPageState extends ConsumerState<CameraPage> {
   void initState() {
     super.initState();
 
-    ref.read(controlProvider);
-
     initCamera();
   }
 
@@ -73,7 +71,7 @@ class _CameraPageState extends ConsumerState<CameraPage> {
         actions: [
           IconButton(
             onPressed: () =>
-                ref.read(controlProvider.notifier).toggleCameraRotate(),
+                ref.read(Control.provider.notifier).toggleCameraRotate(),
             icon: const Icon(Icons.rotate_right),
           ),
         ],

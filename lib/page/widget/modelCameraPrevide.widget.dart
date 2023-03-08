@@ -13,7 +13,7 @@ class ModelCameraPreview extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Control control = ref.watch(controlProvider);
+    final ControlDescription control = ref.watch(Control.provider);
 
     final widgetSize = MediaQuery.of(context).size;
     final scale =
