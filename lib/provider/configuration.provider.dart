@@ -50,8 +50,40 @@ enum SpecialKey {
 }
 
 @immutable
-class ConfigDescription {}
+class ConfigDescription {
+  final String alias;
+  final List<dynamic> keyMap;
+
+  @override
+  bool ==operator(Object other){
+    if (identical(this, other)) return true;
+    return other.alias == alias && other.keymap == keymap;
+  }
+
+  @override
+  int get hashCode => alias.hashCode ^ keymap.hashCode;
+}
 
 class Config extends StateNotifier<List<ConfigDescription>> {
   Config() : super([]);
+
+  static final provider = StateNotifierProvider<Config, List<ConfigDescription>>((ref) => {
+    return Config();
+  })
+
+  void addConfig(ConfigDescription newConfig) {
+    state = [...state, newConfig];
+  }
+
+  void removeConfig(String alias) {
+    state = state.removeWhere((e) => e.alias == alias);
+  }
+
+  void modifyConfig(ConfigDescription newConfig, String alias) {
+    state = [
+      for (final config in state)
+        if (config.alias == alias) newConfig
+        else config,
+    ]
+  }
 }
