@@ -34,18 +34,18 @@ enum EventType {
 }
 
 @immutable
-class ConfigDescription {
+class EventDetail {
   final String alias;
   final String gesture;
   final List<EventType> keyMap;
 
-  const ConfigDescription(
-      {this.alias = '', this.gesture = '', this.keyMap = const []});
+  const EventDetail(
+      {this.alias = 'none', this.gesture = 'none', this.keyMap = const []});
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is ConfigDescription &&
+    return other is EventDetail &&
         other.alias == alias &&
         other.keyMap == keyMap;
   }
@@ -54,30 +54,28 @@ class ConfigDescription {
   int get hashCode => alias.hashCode ^ keyMap.hashCode;
 }
 
-// it might be better when use provider famliy of configdescription class instead managing list of each class model?
-// class Config extends StateNotifier<List<ConfigDescription>> {
-//   Config() : super([]);
+class Event extends StateNotifier<List<EventDetail>> {
+  Event() : super([]);
 
-//   static final provider =
-//       StateNotifierProvider<Config, List<ConfigDescription>>((ref) {
-//     return Config();
-//   });
+  void addConfig() {
+    state = [...state, EventDetail(alias: 'My gesture ${state.length}')];
+  }
 
-//   void addConfig(ConfigDescription newConfig) {
-//     state = [...state, newConfig];
-//   }
+  void removeConfig(String alias) {
+    state = [
+      for (final config in state)
+        if (config.alias != alias) config,
+    ];
+  }
 
-//   void removeConfig(String alias) {
-//     state = [
-//       for (final config in state)
-//         if (config.alias != alias) config,
-//     ];
-//   }
+  void modifyConfig(EventDetail newConfig, String alias) {
+    state = [
+      for (final config in state)
+        if (config.alias == alias) newConfig else config,
+    ];
+  }
+}
 
-//   void modifyConfig(ConfigDescription newConfig, String alias) {
-//     state = [
-//       for (final config in state)
-//         if (config.alias == alias) newConfig else config,
-//     ];
-//   }
-// }
+final eventProvider = StateNotifierProvider<Event, List<EventDetail>>((ref) {
+  return Event();
+});
