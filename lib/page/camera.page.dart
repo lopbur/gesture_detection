@@ -25,6 +25,7 @@ class _CameraPageState extends ConsumerState<CameraPage> {
     initCamera();
   }
 
+  //need provider about camera state
   void initCamera() async {
     _cameras = await availableCameras();
 
