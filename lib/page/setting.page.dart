@@ -23,8 +23,8 @@ class SettingPage extends ConsumerWidget {
             ),
           ),
           ElevatedButton(
-            onPressed: () => ref.read(eventProvider.notifier).addConfig(),
-            child: const Text('Add to Config'),
+            onPressed: () => ref.read(eventProvider.notifier).addEmpty(),
+            child: const Text('Add Config'),
           ),
         ],
       ),
@@ -44,6 +44,10 @@ class EventSettingMenu extends ConsumerStatefulWidget {
 
 class _EventSettingMenuState extends ConsumerState<EventSettingMenu> {
   bool isExpanded = false;
+
+  Widget keyDropdown() {
+    return Text(EventType.alt.toString());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +78,32 @@ class _EventSettingMenuState extends ConsumerState<EventSettingMenu> {
               duration: const Duration(milliseconds: 150),
               curve: Curves.fastOutSlowIn,
               child: Container(
-                child: isExpanded ? Text('Hello') : null,
+                child: isExpanded
+                    ? Stack(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              IconButton(
+                                  onPressed: () => {
+                                        ref
+                                            .read(eventProvider.notifier)
+                                            .addKeyMapEmpty(config.alias)
+                                      },
+                                  icon: const Icon(Icons.add))
+                            ],
+                          ),
+                          Column(
+                            children: [
+                              ...List<Widget>.generate(
+                                config.keyMap.length,
+                                (index) => Text('$index'),
+                              ),
+                            ],
+                          )
+                        ],
+                      )
+                    : null,
               ),
             ),
           ],

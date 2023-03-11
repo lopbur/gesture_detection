@@ -33,19 +33,35 @@ enum EventType {
           orElse: () => EventType.undefined);
 }
 
+final eventProvider =
+    StateNotifierProvider<EventSettingList, List<EventSetting>>((ref) {
+  return EventSettingList();
+});
+
 @immutable
-class EventDetail {
+class EventSetting {
   final String alias;
   final String gesture;
   final List<EventType> keyMap;
 
-  const EventDetail(
+  const EventSetting(
       {this.alias = 'none', this.gesture = 'none', this.keyMap = const []});
+
+  EventSetting copyWith({
+    String? alias,
+    String? gesture,
+    List<EventType>? keyMap,
+  }) =>
+      EventSetting(
+        alias: alias ?? this.alias,
+        gesture: gesture ?? this.gesture,
+        keyMap: keyMap ?? this.keyMap,
+      );
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is EventDetail &&
+    return other is EventSetting &&
         other.alias == alias &&
         other.keyMap == keyMap;
   }
@@ -54,28 +70,57 @@ class EventDetail {
   int get hashCode => alias.hashCode ^ keyMap.hashCode;
 }
 
-class Event extends StateNotifier<List<EventDetail>> {
-  Event() : super([]);
+class EventSettingList extends StateNotifier<List<EventSetting>> {
+  EventSettingList() : super([]);
 
-  void addConfig() {
-    state = [...state, EventDetail(alias: 'My gesture ${state.length}')];
-  }
-
-  void removeConfig(String alias) {
+  void add(EventSetting eventSetting) {
     state = [
-      for (final config in state)
-        if (config.alias != alias) config,
+      ...state,
+      eventSetting,
     ];
   }
 
-  void modifyConfig(EventDetail newConfig, String alias) {
+  void addEmpty() {
     state = [
-      for (final config in state)
-        if (config.alias == alias) newConfig else config,
+      ...state,
+      EventSetting(alias: 'My Gesture ${state.length}'),
     ];
+  }
+
+  void remove(EventSetting eventSetting) {
+    state = state.where((e) => e != eventSetting).toList();
+  }
+
+  void update(EventSetting oldEventSetting, EventSetting newEventSetting) {
+    final index =
+        state.indexWhere((event) => event.alias == oldEventSetting.alias);
+    if (index != -1) {
+      state = [
+        ...state.sublist(0, index),
+        newEventSetting,
+        ...state.sublist(index + 1),
+      ];
+    }
+  }
+
+  void addKeyMapEmpty(String eventAlias) {
+    final index = state.indexWhere((event) => event.alias == eventAlias);
+    if (index != -1) {
+      final eventSetting = state[index];
+      final updatedEventSetting = eventSetting
+          .copyWith(keyMap: [...eventSetting.keyMap, EventType.undefined]);
+
+      update(eventSetting, updatedEventSetting);
+    }
+  }
+
+  void updateKeyMap(String eventAlias, List<EventType> newKeyMap) {
+    final index = state.indexWhere((event) => event.alias == eventAlias);
+    if (index != -1) {
+      final eventSetting = state[index];
+      final updatedEventSetting = eventSetting.copyWith(keyMap: newKeyMap);
+
+      update(eventSetting, updatedEventSetting);
+    }
   }
 }
-
-final eventProvider = StateNotifierProvider<Event, List<EventDetail>>((ref) {
-  return Event();
-});
