@@ -45,8 +45,8 @@ class EventSettingMenu extends ConsumerStatefulWidget {
 class _EventSettingMenuState extends ConsumerState<EventSettingMenu> {
   bool isExpanded = false;
 
-  Widget keyDropdown() {
-    return Text(EventType.alt.toString());
+  Widget getConfigList(int index, EventSetting e) {
+    return Text('$index, $e');
   }
 
   @override
@@ -63,7 +63,20 @@ class _EventSettingMenuState extends ConsumerState<EventSettingMenu> {
                 Expanded(
                   child: Text(config.alias),
                 ),
-                Text('...${config.keyMap.length} event assigned'),
+                Column(
+                  children: [
+                    Text(config.gesture == 'none'
+                        ? 'Not Assigned'
+                        : 'Assigned to ${config.gesture}'),
+                    Text('...${config.keyMap.length} event assigned'),
+                  ],
+                ),
+                IconButton(
+                  onPressed: () {
+                    ref.read(eventProvider.notifier).remove(config);
+                  },
+                  icon: const Icon(Icons.delete),
+                ),
                 IconButton(
                   onPressed: () {
                     setState(() {
@@ -77,34 +90,55 @@ class _EventSettingMenuState extends ConsumerState<EventSettingMenu> {
             AnimatedSize(
               duration: const Duration(milliseconds: 150),
               curve: Curves.fastOutSlowIn,
-              child: Container(
-                child: isExpanded
-                    ? Stack(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              IconButton(
-                                  onPressed: () => {
-                                        ref
-                                            .read(eventProvider.notifier)
-                                            .addKeyMapEmpty(config.alias)
+              child: isExpanded
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: config.keyMap.length,
+                            itemBuilder: (context, index) => Row(
+                              children: [
+                                Expanded(
+                                  child: DropdownButton<EventType>(
+                                    isExpanded: true,
+                                    value: config.keyMap[index],
+                                    onChanged: (EventType? newValue) {
+                                      ref
+                                          .read(eventProvider.notifier)
+                                          .updateKeyMapWhere(
+                                              config.alias, index, newValue!);
+                                    },
+                                    items: EventType.values.map(
+                                      (EventType eventType) {
+                                        return DropdownMenuItem<EventType>(
+                                          value: eventType,
+                                          child: Text(eventType.alias),
+                                        );
                                       },
-                                  icon: const Icon(Icons.add))
-                            ],
+                                    ).toList(),
+                                  ),
+                                ),
+                                IconButton(
+                                    onPressed: () => {},
+                                    icon: const Icon(Icons.delete))
+                              ],
+                            ),
                           ),
-                          Column(
-                            children: [
-                              ...List<Widget>.generate(
-                                config.keyMap.length,
-                                (index) => Text('$index'),
-                              ),
-                            ],
-                          )
-                        ],
-                      )
-                    : null,
-              ),
+                        ),
+                        IconButton(
+                          onPressed: () => {
+                            ref
+                                .read(eventProvider.notifier)
+                                .addKeyMapEmpty(config.alias)
+                          },
+                          icon: const Icon(Icons.add),
+                        ),
+                      ],
+                    )
+                  : Container(),
             ),
           ],
         ),

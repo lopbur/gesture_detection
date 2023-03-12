@@ -34,9 +34,8 @@ enum EventType {
 }
 
 final eventProvider =
-    StateNotifierProvider<EventSettingList, List<EventSetting>>((ref) {
-  return EventSettingList();
-});
+    StateNotifierProvider<EventSettingList, List<EventSetting>>(
+        (ref) => EventSettingList());
 
 @immutable
 class EventSetting {
@@ -121,6 +120,20 @@ class EventSettingList extends StateNotifier<List<EventSetting>> {
       final updatedEventSetting = eventSetting.copyWith(keyMap: newKeyMap);
 
       update(eventSetting, updatedEventSetting);
+    }
+  }
+
+  void updateKeyMapWhere(String eventAlias, int tagetIndex, EventType newKey) {
+    final index = state.indexWhere((event) => event.alias == eventAlias);
+    if (index != -1) {
+      final eventSetting = state[index];
+      final updatedKeymap = [
+        ...eventSetting.keyMap.sublist(0, tagetIndex),
+        newKey,
+        ...eventSetting.keyMap.sublist(tagetIndex + 1),
+      ];
+
+      updateKeyMap(eventAlias, updatedKeymap);
     }
   }
 }
