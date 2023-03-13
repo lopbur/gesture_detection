@@ -49,8 +49,13 @@ enum SpecialKey {
           orElse: () => SpecialKey.undefined);
 }
 
+//Class A extends B with C, D
 @immutable
-class ConfigDescription {}
+class ConfigDescription{
+  // final dynamic keySpecific;
+
+  ConfigDescription();
+}
 
 class Config extends StateNotifier<List<ConfigDescription>> {
   Config() : super([]);
