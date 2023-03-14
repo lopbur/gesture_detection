@@ -157,8 +157,6 @@ class _CameraPageState extends ConsumerState<CameraPage> {
       offset += plane.bytes.length;
     }
 
-    print(result);
-
     return result;
   }
 }
