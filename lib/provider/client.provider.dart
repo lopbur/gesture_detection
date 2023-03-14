@@ -1,7 +1,18 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:socket_io_client/socket_io_client.dart';
+
+enum MessageType {
+  requestStream('req_stream'),
+  responseLandmark('res_landmark'),
+  responseGesture('res_gesture');
+
+  const MessageType(this.value);
+  final String value;
+}
 
 bool mapEquals(Map<String, dynamic>? a, Map<String, dynamic>? b) {
   if (identical(a, b)) {
@@ -28,24 +39,28 @@ class Client {
     this.socketOptions,
     this.sourceDestination,
     this.isInitialized = false,
+    this.isSocketUsed = false,
   });
 
   final Socket? socket;
   final Map<String, dynamic>? socketOptions;
   final String? sourceDestination;
   final bool? isInitialized;
+  final bool? isSocketUsed;
 
   Client copyWith({
     Socket? socket,
     Map<String, dynamic>? socketOptions,
     String? sourceDestination,
     bool? isInitialized,
+    bool? isSocketUsed,
   }) =>
       Client(
         socket: socket ?? this.socket,
         socketOptions: socketOptions ?? this.socketOptions,
         sourceDestination: sourceDestination ?? this.sourceDestination,
         isInitialized: isInitialized ?? this.isInitialized,
+        isSocketUsed: isSocketUsed ?? this.isSocketUsed,
       );
 
   @override
@@ -56,12 +71,13 @@ class Client {
         other.socket == socket &&
         mapEquals(other.socketOptions, socketOptions) &&
         other.sourceDestination == sourceDestination &&
-        other.isInitialized == isInitialized;
+        other.isInitialized == isInitialized &&
+        other.isSocketUsed == isSocketUsed;
   }
 
   @override
-  int get hashCode =>
-      Object.hash(socket, socketOptions, sourceDestination, isInitialized);
+  int get hashCode => Object.hash(
+      socket, socketOptions, sourceDestination, isInitialized, isSocketUsed);
 
   @override
   String toString() {
@@ -89,9 +105,10 @@ class ClientProvider extends StateNotifier<Client> {
     state = state.copyWith(socket: null);
   }
 
-  void send(dynamic data) {
+  void send(MessageType type, dynamic data) {
+    final encoded = json.encode(data);
     if (state.socket?.connected ?? false) {
-      state.socket!.emit('message', data);
+      state.socket!.emit(type.value, encoded);
     }
   }
 

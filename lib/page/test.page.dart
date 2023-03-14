@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gesture_detection_rebuild/provider/event.provider.dart';
 
 class TestPage extends ConsumerStatefulWidget {
   const TestPage({super.key});
@@ -14,9 +13,9 @@ class _TestPageState extends ConsumerState<TestPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Test')),
-      body: Column(
+      body: const Column(
         children: [
-          const Text('Test Message'),
+          Text('Test Message'),
         ],
       ),
     );

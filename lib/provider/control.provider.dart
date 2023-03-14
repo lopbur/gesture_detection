@@ -5,17 +5,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class ControlDescription {
   final int activeCamera;
   final bool isCameraRotate;
+  final bool isCameraStreamStarted;
 
   const ControlDescription(
-      {this.activeCamera = 0, this.isCameraRotate = false});
+      {this.activeCamera = 0,
+      this.isCameraRotate = false,
+      this.isCameraStreamStarted = true});
 
   ControlDescription copyWith({
     int? activeCamera,
     bool? isCameraRotate,
+    bool? isCameraStreamStarted,
   }) =>
       ControlDescription(
         activeCamera: activeCamera ?? this.activeCamera,
         isCameraRotate: isCameraRotate ?? this.isCameraRotate,
+        isCameraStreamStarted:
+            isCameraStreamStarted ?? this.isCameraStreamStarted,
       );
 
   @override
@@ -24,11 +30,15 @@ class ControlDescription {
 
     return other is ControlDescription &&
         other.activeCamera == activeCamera &&
-        other.isCameraRotate == isCameraRotate;
+        other.isCameraRotate == isCameraRotate &&
+        other.isCameraStreamStarted == isCameraStreamStarted;
   }
 
   @override
-  int get hashCode => activeCamera.hashCode ^ isCameraRotate.hashCode;
+  int get hashCode =>
+      activeCamera.hashCode ^
+      isCameraRotate.hashCode ^
+      isCameraStreamStarted.hashCode;
 }
 
 class Control extends StateNotifier<ControlDescription> {
@@ -39,6 +49,9 @@ class Control extends StateNotifier<ControlDescription> {
 
   void toggleCameraRotate() =>
       state = state.copyWith(isCameraRotate: !state.isCameraRotate);
+
+  void toggleCameraStream() => state =
+      state.copyWith(isCameraStreamStarted: !state.isCameraStreamStarted);
 }
 
 final controlProvider = StateNotifierProvider<Control, ControlDescription>(

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gesture_detection_rebuild/provider/client.provider.dart';
 
-//import Providers
 import 'package:gesture_detection_rebuild/provider/control.provider.dart';
 
 import '../util/isolate_util.dart';
@@ -21,25 +20,24 @@ class CameraPage extends ConsumerStatefulWidget {
 class _CameraPageState extends ConsumerState<CameraPage> {
   CameraController? _controller;
   late List<CameraDescription> _cameras;
-  late IsolateUtils _isolate;
+
+  //Test for isolate
+  final IsolateUtils _isolateUtils = IsolateUtils();
+  String _isolateResult = 'isolateResult';
+  //----------------
 
   @override
   void initState() {
     super.initState();
-
-    //initialize isolate unit.
-    _isolate.initIsolate();
-
-    //initialize client provider for socket
     Future.delayed(
         Duration.zero, () => ref.read(clientProvider.notifier).connect());
-
-    //initialize async function -> camera initialize,
-    initSync();
+    initAsync();
   }
 
-  void initSync() async {
+  //need provider about camera state
+  void initAsync() async {
     _cameras = await availableCameras();
+    _isolateUtils.initIsolate();
 
     _controller = CameraController(
       _cameras.first,
@@ -49,18 +47,27 @@ class _CameraPageState extends ConsumerState<CameraPage> {
 
     await _controller!.initialize().then((value) {
       setState(() {});
-      _startCameraStream;
     });
   }
 
-  void _startCameraStream() async {
-    if (!mounted) return;
-    _controller!.startImageStream((CameraImage cameraImage) async {});
+  @override
+  void dispose() {
+    _isolateUtils.dispose();
+    super.dispose();
   }
 
   void _stopCameraStream() {
     if (!mounted) return;
-    _controller!.stopImageStream();
+    if (_controller!.value.isStreamingImages) {
+      _controller!.stopImageStream();
+    }
+  }
+
+  void _startCameraStream() async {
+    if (!mounted) return;
+    _controller!.startImageStream((CameraImage image) => {
+      _isolateSpawn(image)
+    });
   }
 
   Widget getCameraPreviewWidget() {
@@ -78,26 +85,57 @@ class _CameraPageState extends ConsumerState<CameraPage> {
 
   @override
   Widget build(BuildContext context) {
+    final control = ref.watch(controlProvider);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gesture Detection'),
-        actions: [
-          IconButton(
-            onPressed: () =>
-                ref.read(controlProvider.notifier).toggleCameraRotate(),
-            icon: const Icon(Icons.rotate_right),
-          ),
-        ],
-      ),
-      body: getCameraPreviewWidget(),
+        appBar: AppBar(
+          title: const Text('Gesture Detection'),
+          actions: [
+            IconButton(
+              onPressed: () =>
+                  ref.read(controlProvider.notifier).toggleCameraRotate(),
+              icon: const Icon(Icons.rotate_right),
+            ),
+            IconButton(
+              onPressed: () {
+                ref.read(controlProvider.notifier).toggleCameraStream();
+                control.isCameraStreamStarted
+                    ? _startCameraStream()
+                    : _stopCameraStream();
+              },
+              icon: Icon(control.isCameraStreamStarted
+                  ? Icons.play_arrow
+                  : Icons.stop),
+            )
+          ],
+        ),
+        body: Column(
+          children: [
+            getCameraPreviewWidget(),
+            Text(_isolateResult),
+          ],
+        ));
+  }
+
+  void _isolateSpawn(CameraImage image) async {
+    final responsePort = ReceivePort();
+
+    _isolateUtils.sendMessage(
+      handler,
+      _isolateUtils.sendPort,
+      responsePort,
+      params: {'cameraImage': image},
     );
+
+    final result = await responsePort.first;
+    setState(() {
+      _isolateResult = result.toString();
+    });
   }
 
-  void _isolateSpawn(CameraImage image) {
-    var responsePort = ReceivePort();
+  static Future<dynamic> handler(dynamic params) async {
+    print(params);
 
-    _isolate.sendMessage(isolateHandler, _isolate.sendPort, responsePort, params: {'imageBuffer': image.planes.map((plane) => plane.bytes).toList(),});
+    return 0;
   }
-
-  static void isolateHandler() {}
 }
