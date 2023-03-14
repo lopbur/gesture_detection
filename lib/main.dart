@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gesture_detection_rebuild/page/setting.page.dart';
 
 import 'page/camera.page.dart';
 

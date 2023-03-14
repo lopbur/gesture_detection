@@ -1,16 +1,16 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:isolate';
 
+import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:gesture_detection_rebuild/provider/client.provider.dart';
+
 import 'package:gesture_detection_rebuild/provider/control.provider.dart';
 
-import '../utils/isolate_utils.dart';
+import '../util/isolate_util.dart';
 import 'widget/modelCameraPrevide.widget.dart';
 
 class CameraPage extends ConsumerStatefulWidget {
@@ -24,7 +24,8 @@ class _CameraPageState extends ConsumerState<CameraPage> {
   CameraController? _controller;
   late List<CameraDescription> _cameras;
 
-  final int _frameInterval = (1000 / 60).floor();
+  final int _frameInterval = (1000 / 50).floor();
+  Timer? _frameTimer;
 
   final IsolateUtils _isolateUtils = IsolateUtils();
 
@@ -148,10 +149,16 @@ class _CameraPageState extends ConsumerState<CameraPage> {
 
   static Future<dynamic> handler(dynamic params) async {
     final data = params['image'] as CameraImage;
-    final result = data.planes
-        .map((plane) => plane.bytes)
-        .expand((element) => element)
-        .toList();
+    final result = Uint8List(
+        data.planes.fold(0, (count, plane) => count + plane.bytes.length));
+    int offset = 0;
+    for (final plane in data.planes) {
+      result.setRange(offset, offset + plane.bytes.length, plane.bytes);
+      offset += plane.bytes.length;
+    }
+
+    print(result);
+
     return result;
   }
 }

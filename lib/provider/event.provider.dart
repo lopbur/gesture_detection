@@ -123,17 +123,30 @@ class EventSettingList extends StateNotifier<List<EventSetting>> {
     }
   }
 
-  void updateKeyMapWhere(String eventAlias, int tagetIndex, EventType newKey) {
+  void updateKeyMapWhere(String eventAlias, int targetIndex, EventType newKey) {
     final index = state.indexWhere((event) => event.alias == eventAlias);
     if (index != -1) {
       final eventSetting = state[index];
-      final updatedKeymap = [
-        ...eventSetting.keyMap.sublist(0, tagetIndex),
-        newKey,
-        ...eventSetting.keyMap.sublist(tagetIndex + 1),
-      ];
+      if (targetIndex >= 0 && targetIndex < eventSetting.keyMap.length) {
+        final updatedKeyMap = [
+          ...eventSetting.keyMap.sublist(0, targetIndex),
+          newKey,
+          ...eventSetting.keyMap.sublist(targetIndex + 1),
+        ];
+        updateKeyMap(eventAlias, updatedKeyMap);
+      }
+    }
+  }
 
-      updateKeyMap(eventAlias, updatedKeymap);
+  void removeKeyMapWhere(String eventAlias, int targetIndex) {
+    final index = state.indexWhere((event) => event.alias == eventAlias);
+    if (index != -1) {
+      final eventSetting = state[index];
+      final updatedKeyMap = List<EventType>.from(eventSetting.keyMap);
+      if (targetIndex >= 0 && targetIndex < updatedKeyMap.length) {
+        updatedKeyMap.removeAt(targetIndex);
+        updateKeyMap(eventAlias, updatedKeyMap);
+      }
     }
   }
 }

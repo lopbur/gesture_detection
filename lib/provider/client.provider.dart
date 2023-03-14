@@ -1,5 +1,5 @@
+import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -96,7 +96,10 @@ class ClientProvider extends StateNotifier<Client> {
     state = state.copyWith(
         socket: io(state.sourceDestination ?? 'http://10.0.2.2:5000', options));
     state.socket!.onConnect((_) => _setIsInitialized(true));
-    state.socket!.onDisconnect((_) => _setIsInitialized(false));
+    state.socket!.onDisconnect((_) {
+      _setIsInitialized(false);
+      _reconnect();
+    });
   }
 
   void disconnect() {
@@ -129,5 +132,18 @@ class ClientProvider extends StateNotifier<Client> {
 
   void _setIsInitialized(bool isInitialized) {
     state = state.copyWith(isInitialized: isInitialized);
+  }
+
+  void _reconnect() {
+    Timer(Duration(seconds: 5), () {
+      if (!state.isInitialized! && !state.isSocketUsed!) {
+        connect();
+      }
+    });
+  }
+
+  void reconnect() {
+    disconnect();
+    _reconnect();
   }
 }

@@ -7,26 +7,37 @@ class SettingPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final config = ref.watch(eventProvider);
+    final configLists = ref.watch(eventProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: config.length,
-              itemBuilder: (BuildContext context, int index) =>
-                  EventSettingMenu(index: index),
+      body: Center(
+        child: Column(
+          children: [
+            configLists.isNotEmpty
+                ? Expanded(
+                    child: ListView.builder(
+                      itemCount: configLists.length,
+                      itemBuilder: (BuildContext context, int index) =>
+                          EventSettingMenu(index: index),
+                    ),
+                  )
+                : const Expanded(
+                    child: Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: Text(
+                      'There are no settings.',
+                      style: TextStyle(fontSize: 16.0, color: Colors.grey),
+                    ),
+                  )),
+            ElevatedButton(
+              onPressed: () => ref.read(eventProvider.notifier).addEmpty(),
+              child: const Text('Add Config'),
             ),
-          ),
-          ElevatedButton(
-            onPressed: () => ref.read(eventProvider.notifier).addEmpty(),
-            child: const Text('Add Config'),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -66,7 +77,7 @@ class _EventSettingMenuState extends ConsumerState<EventSettingMenu> {
                 Column(
                   children: [
                     Text(config.gesture == 'none'
-                        ? 'Not Assigned'
+                        ? 'Gesture not assigned'
                         : 'Assigned to ${config.gesture}'),
                     Text('...${config.keyMap.length} event assigned'),
                   ],
@@ -91,52 +102,63 @@ class _EventSettingMenuState extends ConsumerState<EventSettingMenu> {
               duration: const Duration(milliseconds: 150),
               curve: Curves.fastOutSlowIn,
               child: isExpanded
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: config.keyMap.length,
-                            itemBuilder: (context, index) => Row(
-                              children: [
-                                Expanded(
-                                  child: DropdownButton<EventType>(
-                                    isExpanded: true,
-                                    value: config.keyMap[index],
-                                    onChanged: (EventType? newValue) {
-                                      ref
-                                          .read(eventProvider.notifier)
-                                          .updateKeyMapWhere(
-                                              config.alias, index, newValue!);
-                                    },
-                                    items: EventType.values.map(
-                                      (EventType eventType) {
-                                        return DropdownMenuItem<EventType>(
-                                          value: eventType,
-                                          child: Text(eventType.alias),
-                                        );
-                                      },
-                                    ).toList(),
-                                  ),
+                  ? SizedBox(
+                      height: 150,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Scrollbar(
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                // physics: const NeverScrollableScrollPhysics(),
+                                itemCount: config.keyMap.length,
+                                itemBuilder: (context, index) => Row(
+                                  children: [
+                                    Text('#${index + 1}  '),
+                                    Expanded(
+                                      child: DropdownButton<EventType>(
+                                        isExpanded: true,
+                                        value: config.keyMap[index],
+                                        onChanged: (EventType? newValue) {
+                                          ref
+                                              .read(eventProvider.notifier)
+                                              .updateKeyMapWhere(config.alias,
+                                                  index, newValue!);
+                                        },
+                                        items: EventType.values.map(
+                                          (EventType eventType) {
+                                            return DropdownMenuItem<EventType>(
+                                              value: eventType,
+                                              child: Text(eventType.alias),
+                                            );
+                                          },
+                                        ).toList(),
+                                      ),
+                                    ),
+                                    IconButton(
+                                        onPressed: () => {
+                                              ref
+                                                  .read(eventProvider.notifier)
+                                                  .removeKeyMapWhere(
+                                                      config.alias, index)
+                                            },
+                                        icon: const Icon(Icons.delete))
+                                  ],
                                 ),
-                                IconButton(
-                                    onPressed: () => {},
-                                    icon: const Icon(Icons.delete))
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                        IconButton(
-                          onPressed: () => {
-                            ref
-                                .read(eventProvider.notifier)
-                                .addKeyMapEmpty(config.alias)
-                          },
-                          icon: const Icon(Icons.add),
-                        ),
-                      ],
+                          IconButton(
+                            onPressed: () => {
+                              ref
+                                  .read(eventProvider.notifier)
+                                  .addKeyMapEmpty(config.alias)
+                            },
+                            icon: const Icon(Icons.add),
+                          ),
+                        ],
+                      ),
                     )
                   : Container(),
             ),
