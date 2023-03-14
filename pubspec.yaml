@@ -36,6 +36,7 @@ dependencies:
   image: ^4.0.15
   web_socket_channel: ^2.3.0
   socket_io_client: ^2.0.1
+  http: ^0.13.3
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

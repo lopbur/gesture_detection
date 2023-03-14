@@ -1,11 +1,15 @@
-import 'package:camera/camera.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gesture_detection_rebuild/provider/client.provider.dart';
+import 'dart:convert';
+import 'dart:isolate';
 
-//import Providers
+import 'package:flutter/material.dart';
+import 'package:camera/camera.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
+
+import 'package:gesture_detection_rebuild/provider/client.provider.dart';
 import 'package:gesture_detection_rebuild/provider/control.provider.dart';
 
+import '../utils/isolate_utils.dart';
 import 'widget/modelCameraPrevide.widget.dart';
 
 class CameraPage extends ConsumerStatefulWidget {
@@ -19,18 +23,25 @@ class _CameraPageState extends ConsumerState<CameraPage> {
   CameraController? _controller;
   late List<CameraDescription> _cameras;
 
+  //Test for isolate
+  final IsolateUtils _isolateUtils = IsolateUtils();
+  final String _url = 'https://randomuser.me/api';
+  String _isolateResult = 'isolateResult';
+
+  //----------------
+
   @override
   void initState() {
     super.initState();
-
     Future.delayed(
         Duration.zero, () => ref.read(clientProvider.notifier).connect());
-    initCamera();
+    initAsync();
   }
 
   //need provider about camera state
-  void initCamera() async {
+  void initAsync() async {
     _cameras = await availableCameras();
+    _isolateUtils.initIsolate();
 
     _controller = CameraController(
       _cameras.first,
@@ -40,18 +51,24 @@ class _CameraPageState extends ConsumerState<CameraPage> {
 
     await _controller!.initialize().then((value) {
       setState(() {});
-      _startCameraStream;
     });
   }
 
-  void _startCameraStream() async {
-    if (!mounted) return;
-    _controller!.startImageStream((CameraImage cameraImage) async {});
+  @override
+  void dispose() {
+    _isolateUtils.dispose();
+    super.dispose();
   }
 
   void _stopCameraStream() {
     if (!mounted) return;
-    _controller!.stopImageStream();
+    if (_controller!.value.isStreamingImages) {
+      _controller!.stopImageStream();
+    }
+  }
+
+  void _startCameraStream() async {
+    if (!mounted) return;
   }
 
   Widget getCameraPreviewWidget() {
@@ -69,18 +86,63 @@ class _CameraPageState extends ConsumerState<CameraPage> {
 
   @override
   Widget build(BuildContext context) {
+    final control = ref.watch(controlProvider);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gesture Detection'),
-        actions: [
-          IconButton(
-            onPressed: () =>
-                ref.read(controlProvider.notifier).toggleCameraRotate(),
-            icon: const Icon(Icons.rotate_right),
-          ),
-        ],
-      ),
-      body: getCameraPreviewWidget(),
+        appBar: AppBar(
+          title: const Text('Gesture Detection'),
+          actions: [
+            IconButton(
+              onPressed: () =>
+                  ref.read(controlProvider.notifier).toggleCameraRotate(),
+              icon: const Icon(Icons.rotate_right),
+            ),
+            IconButton(
+              onPressed: _isolateSpawn,
+              icon: const Icon(Icons.rotate_right),
+            ),
+            IconButton(
+              onPressed: () {
+                ref.read(controlProvider.notifier).toggleCameraStream();
+                control.isCameraStreamStarted
+                    ? _startCameraStream()
+                    : _stopCameraStream();
+              },
+              icon: Icon(control.isCameraStreamStarted
+                  ? Icons.play_arrow
+                  : Icons.stop),
+            )
+          ],
+        ),
+        body: Column(
+          children: [
+            getCameraPreviewWidget(),
+            Text(_isolateResult),
+          ],
+        ));
+  }
+
+  void _isolateSpawn() async {
+    final responsePort = ReceivePort();
+
+    _isolateUtils.sendMessage(
+      handler,
+      _isolateUtils.sendPort,
+      responsePort,
+      params: _url,
     );
+
+    final result = await responsePort.first;
+    setState(() {
+      _isolateResult = result.toString();
+    });
+  }
+
+  static Future<dynamic> handler(String url) async {
+    final response = await http.get(Uri.parse(url));
+    final json = jsonDecode(response.body);
+
+    print(json['results'][0]['email']);
+    return json['results'][0]['email'];
   }
 }
