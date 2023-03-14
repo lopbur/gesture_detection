@@ -1,6 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gesture_detection_rebuild/provider/client.provider.dart';
 
 //import Providers
 import 'package:gesture_detection_rebuild/provider/control.provider.dart';
@@ -22,9 +23,12 @@ class _CameraPageState extends ConsumerState<CameraPage> {
   void initState() {
     super.initState();
 
+    Future.delayed(
+        Duration.zero, () => ref.read(clientProvider.notifier).connect());
     initCamera();
   }
 
+  //need provider about camera state
   void initCamera() async {
     _cameras = await availableCameras();
 
@@ -71,7 +75,7 @@ class _CameraPageState extends ConsumerState<CameraPage> {
         actions: [
           IconButton(
             onPressed: () =>
-                ref.read(Control.provider.notifier).toggleCameraRotate(),
+                ref.read(controlProvider.notifier).toggleCameraRotate(),
             icon: const Icon(Icons.rotate_right),
           ),
         ],

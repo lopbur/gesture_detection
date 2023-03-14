@@ -34,10 +34,6 @@ class ControlDescription {
 class Control extends StateNotifier<ControlDescription> {
   Control() : super(const ControlDescription());
 
-  static final provider = StateNotifierProvider<Control, ControlDescription>(
-    (ref) => Control(),
-  );
-
   void setActiveCamera(int number) =>
       state = state.copyWith(activeCamera: number);
 
@@ -45,7 +41,6 @@ class Control extends StateNotifier<ControlDescription> {
       state = state.copyWith(isCameraRotate: !state.isCameraRotate);
 }
 
-//it might be better which is define provider as static methods on its own class
-// final controlProvider = StateNotifierProvider<ControlNotifier, Control>(
-//   (ref) => ControlNotifier(),
-// );
+final controlProvider = StateNotifierProvider<Control, ControlDescription>(
+  (ref) => Control(),
+);
