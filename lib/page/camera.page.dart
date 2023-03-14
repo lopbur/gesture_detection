@@ -1,10 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 
 import 'package:gesture_detection_rebuild/provider/client.provider.dart';
 import 'package:gesture_detection_rebuild/provider/control.provider.dart';
@@ -23,12 +24,9 @@ class _CameraPageState extends ConsumerState<CameraPage> {
   CameraController? _controller;
   late List<CameraDescription> _cameras;
 
-  //Test for isolate
-  final IsolateUtils _isolateUtils = IsolateUtils();
-  final String _url = 'https://randomuser.me/api';
-  String _isolateResult = 'isolateResult';
+  final int _frameInterval = (1000 / 60).floor();
 
-  //----------------
+  final IsolateUtils _isolateUtils = IsolateUtils();
 
   @override
   void initState() {
@@ -56,6 +54,7 @@ class _CameraPageState extends ConsumerState<CameraPage> {
 
   @override
   void dispose() {
+    _controller!.dispose();
     _isolateUtils.dispose();
     super.dispose();
   }
@@ -69,6 +68,14 @@ class _CameraPageState extends ConsumerState<CameraPage> {
 
   void _startCameraStream() async {
     if (!mounted) return;
+    _controller!.startImageStream((CameraImage image) {
+      if (ref.read(controlProvider).isIsolateBusy) return;
+      ref.read(controlProvider.notifier).setIsolateBusy(true);
+      Future.delayed(Duration(milliseconds: _frameInterval), () {
+        _isolateSpawn(image);
+        ref.read(controlProvider.notifier).setIsolateBusy(false);
+      });
+    });
   }
 
   Widget getCameraPreviewWidget() {
@@ -98,10 +105,6 @@ class _CameraPageState extends ConsumerState<CameraPage> {
               icon: const Icon(Icons.rotate_right),
             ),
             IconButton(
-              onPressed: _isolateSpawn,
-              icon: const Icon(Icons.rotate_right),
-            ),
-            IconButton(
               onPressed: () {
                 ref.read(controlProvider.notifier).toggleCameraStream();
                 control.isCameraStreamStarted
@@ -116,33 +119,39 @@ class _CameraPageState extends ConsumerState<CameraPage> {
         ),
         body: Column(
           children: [
-            getCameraPreviewWidget(),
-            Text(_isolateResult),
+            Expanded(
+              flex: 1,
+              child: getCameraPreviewWidget(),
+            ),
+            Expanded(flex: 1, child: Container())
           ],
         ));
   }
 
-  void _isolateSpawn() async {
+  dynamic _isolateSpawn(CameraImage image) async {
     final responsePort = ReceivePort();
 
     _isolateUtils.sendMessage(
       handler,
       _isolateUtils.sendPort,
       responsePort,
-      params: _url,
+      params: {'image': image},
     );
+    final result = {
+      'buffer': await responsePort.first,
+      'height': image.height,
+      'width': image.width
+    };
 
-    final result = await responsePort.first;
-    setState(() {
-      _isolateResult = result.toString();
-    });
+    ref.read(clientProvider.notifier).send(MessageType.requestStream, result);
   }
 
-  static Future<dynamic> handler(String url) async {
-    final response = await http.get(Uri.parse(url));
-    final json = jsonDecode(response.body);
-
-    print(json['results'][0]['email']);
-    return json['results'][0]['email'];
+  static Future<dynamic> handler(dynamic params) async {
+    final data = params['image'] as CameraImage;
+    final result = data.planes
+        .map((plane) => plane.bytes)
+        .expand((element) => element)
+        .toList();
+    return result;
   }
 }

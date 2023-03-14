@@ -6,22 +6,27 @@ class ControlDescription {
   final int activeCamera;
   final bool isCameraRotate;
   final bool isCameraStreamStarted;
+  final bool isIsolateBusy;
 
-  const ControlDescription(
-      {this.activeCamera = 0,
-      this.isCameraRotate = false,
-      this.isCameraStreamStarted = true});
+  const ControlDescription({
+    this.activeCamera = 0,
+    this.isCameraRotate = false,
+    this.isCameraStreamStarted = true,
+    this.isIsolateBusy = false,
+  });
 
   ControlDescription copyWith({
     int? activeCamera,
     bool? isCameraRotate,
     bool? isCameraStreamStarted,
+    bool? isIsolateBusy,
   }) =>
       ControlDescription(
         activeCamera: activeCamera ?? this.activeCamera,
         isCameraRotate: isCameraRotate ?? this.isCameraRotate,
         isCameraStreamStarted:
             isCameraStreamStarted ?? this.isCameraStreamStarted,
+        isIsolateBusy: isIsolateBusy ?? this.isIsolateBusy,
       );
 
   @override
@@ -31,14 +36,16 @@ class ControlDescription {
     return other is ControlDescription &&
         other.activeCamera == activeCamera &&
         other.isCameraRotate == isCameraRotate &&
-        other.isCameraStreamStarted == isCameraStreamStarted;
+        other.isCameraStreamStarted == isCameraStreamStarted &&
+        other.isIsolateBusy == isIsolateBusy;
   }
 
   @override
   int get hashCode =>
       activeCamera.hashCode ^
       isCameraRotate.hashCode ^
-      isCameraStreamStarted.hashCode;
+      isCameraStreamStarted.hashCode ^
+      isIsolateBusy.hashCode;
 }
 
 class Control extends StateNotifier<ControlDescription> {
@@ -52,6 +59,9 @@ class Control extends StateNotifier<ControlDescription> {
 
   void toggleCameraStream() => state =
       state.copyWith(isCameraStreamStarted: !state.isCameraStreamStarted);
+
+  void setIsolateBusy(bool isIsolateBusy) =>
+      state = state.copyWith(isIsolateBusy: isIsolateBusy);
 }
 
 final controlProvider = StateNotifierProvider<Control, ControlDescription>(
