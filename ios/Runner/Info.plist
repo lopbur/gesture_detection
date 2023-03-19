@@ -5,11 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-<<<<<<< HEAD
 	<string>Gesture Detection</string>
-=======
-	<string>Gesture Detection Rebuild</string>
->>>>>>> b7a943a58105d8d77f1bcca74eedecf0f0879b02
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -17,11 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-<<<<<<< HEAD
 	<string>gesture_detection</string>
-=======
-	<string>gesture_detection_rebuild</string>
->>>>>>> b7a943a58105d8d77f1bcca74eedecf0f0879b02
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

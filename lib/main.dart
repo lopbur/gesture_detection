@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-<<<<<<< HEAD
 import 'package:gesture_detection/page/gesture_train.page.dart';
-=======
-import 'package:gesture_detection_rebuild/page/gesture_train.page.dart';
->>>>>>> b7a943a58105d8d77f1bcca74eedecf0f0879b02
 
 // import 'page/camera.page.dart';
 

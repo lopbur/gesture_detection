@@ -44,17 +44,10 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-<<<<<<< HEAD
         applicationId "com.example.gesture_detection"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-build-configuration.
         minSdkVersion 21 //flutter.minSdkVersion
-=======
-        applicationId "com.example.gesture_detection_rebuild"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-build-configuration.
-        minSdkVersion 21//flutter.minSdkVersion
->>>>>>> b7a943a58105d8d77f1bcca74eedecf0f0879b02
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName

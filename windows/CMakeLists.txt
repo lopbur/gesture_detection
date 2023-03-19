@@ -1,18 +1,10 @@
 # Project-level configuration.
 cmake_minimum_required(VERSION 3.14)
-<<<<<<< HEAD
 project(gesture_detection LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
 set(BINARY_NAME "gesture_detection")
-=======
-project(gesture_detection_rebuild LANGUAGES CXX)
-
-# The name of the executable created for the application. Change this to change
-# the on-disk name of your application.
-set(BINARY_NAME "gesture_detection_rebuild")
->>>>>>> b7a943a58105d8d77f1bcca74eedecf0f0879b02
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.

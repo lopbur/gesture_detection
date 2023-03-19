@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 # gesture_detection
-=======
-# gesture_detection_rebuild
->>>>>>> b7a943a58105d8d77f1bcca74eedecf0f0879b02
 
 A new Flutter project.
 

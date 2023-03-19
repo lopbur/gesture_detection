@@ -90,21 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-<<<<<<< HEAD
             VALUE "FileDescription", "gesture_detection" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "gesture_detection" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2023 com.example. All rights reserved." "\0"
             VALUE "OriginalFilename", "gesture_detection.exe" "\0"
             VALUE "ProductName", "gesture_detection" "\0"
-=======
-            VALUE "FileDescription", "gesture_detection_rebuild" "\0"
-            VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "gesture_detection_rebuild" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2023 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "gesture_detection_rebuild.exe" "\0"
-            VALUE "ProductName", "gesture_detection_rebuild" "\0"
->>>>>>> b7a943a58105d8d77f1bcca74eedecf0f0879b02
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

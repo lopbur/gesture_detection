@@ -27,11 +27,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   FlutterWindow window(project);
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(1280, 720);
-<<<<<<< HEAD
   if (!window.CreateAndShow(L"gesture_detection", origin, size)) {
-=======
-  if (!window.CreateAndShow(L"gesture_detection_rebuild", origin, size)) {
->>>>>>> b7a943a58105d8d77f1bcca74eedecf0f0879b02
     return EXIT_FAILURE;
   }
   window.SetQuitOnClose(true);

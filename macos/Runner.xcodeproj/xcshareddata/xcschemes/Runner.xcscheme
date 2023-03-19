@@ -15,11 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "33CC10EC2044A3C60003C045"
-<<<<<<< HEAD
                BuildableName = "gesture_detection.app"
-=======
-               BuildableName = "gesture_detection_rebuild.app"
->>>>>>> b7a943a58105d8d77f1bcca74eedecf0f0879b02
                BlueprintName = "Runner"
                ReferencedContainer = "container:Runner.xcodeproj">
             </BuildableReference>
@@ -35,11 +31,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "33CC10EC2044A3C60003C045"
-<<<<<<< HEAD
             BuildableName = "gesture_detection.app"
-=======
-            BuildableName = "gesture_detection_rebuild.app"
->>>>>>> b7a943a58105d8d77f1bcca74eedecf0f0879b02
             BlueprintName = "Runner"
             ReferencedContainer = "container:Runner.xcodeproj">
          </BuildableReference>
@@ -62,11 +54,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "33CC10EC2044A3C60003C045"
-<<<<<<< HEAD
             BuildableName = "gesture_detection.app"
-=======
-            BuildableName = "gesture_detection_rebuild.app"
->>>>>>> b7a943a58105d8d77f1bcca74eedecf0f0879b02
             BlueprintName = "Runner"
             ReferencedContainer = "container:Runner.xcodeproj">
          </BuildableReference>
@@ -83,11 +71,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "33CC10EC2044A3C60003C045"
-<<<<<<< HEAD
             BuildableName = "gesture_detection.app"
-=======
-            BuildableName = "gesture_detection_rebuild.app"
->>>>>>> b7a943a58105d8d77f1bcca74eedecf0f0879b02
             BlueprintName = "Runner"
             ReferencedContainer = "container:Runner.xcodeproj">
          </BuildableReference>
