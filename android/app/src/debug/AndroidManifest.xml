@@ -1,5 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<<<<<<< HEAD
     package="com.example.gesture_detection">
+=======
+    package="com.example.gesture_detection_rebuild">
+>>>>>>> b7a943a58105d8d77f1bcca74eedecf0f0879b02
     <!-- The INTERNET permission is required for development. Specifically,
          the Flutter tool needs it to communicate with the running application
          to allow setting breakpoints, to provide hot reload, etc.

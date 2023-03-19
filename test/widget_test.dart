@@ -8,7 +8,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+<<<<<<< HEAD
 import 'package:gesture_detection/main.dart';
+=======
+import 'package:gesture_detection_rebuild/main.dart';
+>>>>>>> b7a943a58105d8d77f1bcca74eedecf0f0879b02
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {

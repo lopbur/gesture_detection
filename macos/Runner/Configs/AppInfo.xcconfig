@@ -5,10 +5,17 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
+<<<<<<< HEAD
 PRODUCT_NAME = gesture_detection
 
 // The application's bundle identifier
 PRODUCT_BUNDLE_IDENTIFIER = com.example.gestureDetection
+=======
+PRODUCT_NAME = gesture_detection_rebuild
+
+// The application's bundle identifier
+PRODUCT_BUNDLE_IDENTIFIER = com.example.gestureDetectionRebuild
+>>>>>>> b7a943a58105d8d77f1bcca74eedecf0f0879b02
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2023 com.example. All rights reserved.
