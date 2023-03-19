@@ -1,69 +1,51 @@
-import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-@immutable
-class ControlDescription {
-  final int activeCamera;
-  final bool isCameraRotate;
-  final bool isCameraStreamStarted;
-  final bool isIsolateBusy;
+part '../generated/provider/control.provider.freezed.dart';
+part '../generated/provider/control.provider.g.dart';
 
-  const ControlDescription({
-    this.activeCamera = 0,
-    this.isCameraRotate = false,
-    this.isCameraStreamStarted = true,
-    this.isIsolateBusy = false,
-  });
+bool isIsolateBusy = false;
+final isolateFlagProvider = StateProvider<bool>(
+  (ref) => isIsolateBusy,
+);
 
-  ControlDescription copyWith({
-    int? activeCamera,
-    bool? isCameraRotate,
-    bool? isCameraStreamStarted,
-    bool? isIsolateBusy,
-  }) =>
-      ControlDescription(
-        activeCamera: activeCamera ?? this.activeCamera,
-        isCameraRotate: isCameraRotate ?? this.isCameraRotate,
-        isCameraStreamStarted:
-            isCameraStreamStarted ?? this.isCameraStreamStarted,
-        isIsolateBusy: isIsolateBusy ?? this.isIsolateBusy,
-      );
+@freezed
+class Control with _$Control {
+  factory Control({
+    @Default(16) int frameInterval,
+    @Default(3) int makeSequenceTime,
+    @Default(false) bool isCameraRotate,
+    @Default(false) bool isCameraStreamStarted,
+  }) = _Control;
 
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+  factory Control.fromJson(Map<String, dynamic> json) =>
+      _$ControlFromJson(json);
+}
 
-    return other is ControlDescription &&
-        other.activeCamera == activeCamera &&
-        other.isCameraRotate == isCameraRotate &&
-        other.isCameraStreamStarted == isCameraStreamStarted &&
-        other.isIsolateBusy == isIsolateBusy;
+class ControlProvider extends StateNotifier<Control> {
+  ControlProvider() : super(Control());
+
+  void setFPS(int fps) {
+    state = state.copyWith(frameInterval: (1000 / fps).floor());
   }
 
-  @override
-  int get hashCode =>
-      activeCamera.hashCode ^
-      isCameraRotate.hashCode ^
-      isCameraStreamStarted.hashCode ^
-      isIsolateBusy.hashCode;
+  void setCameraStream(bool val) {
+    state = state.copyWith(isCameraStreamStarted: val);
+  }
+
+  void setMakeSequenceTime(int val) {
+    state = state.copyWith(makeSequenceTime: val);
+  }
+
+  void toggleCameraRotate() {
+    state = state.copyWith(isCameraRotate: !state.isCameraRotate);
+  }
+
+  void toggleCameraStream() {
+    state = state.copyWith(isCameraStreamStarted: !state.isCameraStreamStarted);
+  }
 }
 
-class Control extends StateNotifier<ControlDescription> {
-  Control() : super(const ControlDescription());
-
-  void setActiveCamera(int number) =>
-      state = state.copyWith(activeCamera: number);
-
-  void toggleCameraRotate() =>
-      state = state.copyWith(isCameraRotate: !state.isCameraRotate);
-
-  void toggleCameraStream() => state =
-      state.copyWith(isCameraStreamStarted: !state.isCameraStreamStarted);
-
-  void setIsolateBusy(bool isIsolateBusy) =>
-      state = state.copyWith(isIsolateBusy: isIsolateBusy);
-}
-
-final controlProvider = StateNotifierProvider<Control, ControlDescription>(
-  (ref) => Control(),
+final controlProvider = StateNotifierProvider<ControlProvider, Control>(
+  (ref) => ControlProvider(),
 );

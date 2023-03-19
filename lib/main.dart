@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gesture_detection_rebuild/page/setting.page.dart';
+import 'package:gesture_detection_rebuild/page/gesture_train.page.dart';
 
-import 'page/camera.page.dart';
+// import 'page/camera.page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +20,7 @@ class MyApp extends ConsumerWidget {
       theme: ThemeData(
         primarySwatch: Colors.blueGrey,
       ),
-      home: const CameraPage(),
+      home: const GestureTrainPage(),
     );
   }
 }

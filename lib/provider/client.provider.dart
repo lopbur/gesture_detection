@@ -1,10 +1,60 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:socket_io_client/socket_io_client.dart';
+
+import '../util/common_util.dart';
+
+// import 'package:freezed_annotation/freezed_annotation.dart';
+// part '../generated/provider/client.provider.freezed.dart';
+// part '../generated/provider/client.provider.g.dart';
+
+// @JsonSerializable()
+// class SocketConverter implements JsonConverter<Socket?, Map<String, dynamic>?> {
+//   const SocketConverter();
+
+//   @override
+//   Socket? fromJson(Map<String, dynamic>? json) {
+//     if (json == null) {
+//       return null;
+//     }
+//     final url = json['url'] as String?;
+//     final transport = json['transport'] as String?;
+//     if (url == null || transport == null) {
+//       return null;
+//     }
+//     final options = OptionBuilder().setTransports([transport]).build();
+//     return io(url, options);
+//   }
+
+//   @override
+//   Map<String, dynamic>? toJson(Socket? socket) {
+//     if (socket == null) {
+//       return null;
+//     }
+//     return {
+//       'url': socket.io.uri.toString(),
+//       'path': socket.io.options['transports'],
+//     };
+//   }
+// }
+
+// @freezed
+// class Client with _$Client {
+//   @JsonSerializable(explicitToJson: true)
+//   factory Client({
+//     @JsonKey(fromJson: SocketConverter().fromJson, toJson: SocketConverter().toJson)
+//         Socket? socket,
+//     Map<String, dynamic>? socketOptions,
+//     String? sourceDestination,
+//     bool? isInitialized,
+//     bool? isSocketUsed,
+//   }) = _Client;
+
+//   factory Client.fromJson(Map<String, dynamic> json) => _$ControlFromJson(json);
+// }
 
 enum MessageType {
   requestStream('req_stream'),
@@ -13,21 +63,6 @@ enum MessageType {
 
   const MessageType(this.value);
   final String value;
-}
-
-bool mapEquals(Map<String, dynamic>? a, Map<String, dynamic>? b) {
-  if (identical(a, b)) {
-    return true;
-  }
-  if (a == null || b == null || a.length != b.length) {
-    return false;
-  }
-  for (var key in a.keys) {
-    if (!b.containsKey(key) || a[key] != b[key]) {
-      return false;
-    }
-  }
-  return true;
 }
 
 final clientProvider =
@@ -135,7 +170,7 @@ class ClientProvider extends StateNotifier<Client> {
   }
 
   void _reconnect() {
-    Timer(Duration(seconds: 5), () {
+    Timer(const Duration(seconds: 5), () {
       if (!state.isInitialized! && !state.isSocketUsed!) {
         connect();
       }

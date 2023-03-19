@@ -11,14 +11,15 @@ import '../util/isolate_util.dart';
 
 import 'widget/camera_preview_wrapper.dart';
 
-class CameraPage extends ConsumerStatefulWidget {
-  const CameraPage({super.key});
+class GestureTrainPage extends ConsumerStatefulWidget {
+  const GestureTrainPage({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _CameraPageState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _GestureTrainPageState();
 }
 
-class _CameraPageState extends ConsumerState<CameraPage> {
+class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
   final IsolateUtils _isolateUtils = IsolateUtils();
 
   @override
@@ -40,33 +41,59 @@ class _CameraPageState extends ConsumerState<CameraPage> {
     final control = ref.watch(controlProvider);
 
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Gesture Detection'),
-          actions: [
-            IconButton(
-              onPressed: () =>
-                  ref.watch(controlProvider.notifier).toggleCameraRotate(),
-              icon: const Icon(Icons.rotate_right),
+      appBar: AppBar(
+        title: const Text('Gesture Train'),
+        actions: [
+          IconButton(
+            onPressed: () =>
+                ref.watch(controlProvider.notifier).toggleCameraRotate(),
+            icon: const Icon(Icons.rotate_right),
+          ),
+          IconButton(
+            onPressed: () {
+              makeSequence();
+            },
+            icon: Icon(
+                control.isCameraStreamStarted ? Icons.stop : Icons.play_arrow),
+          )
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: CameraPreviewWrapper(
+              streamHandler: cameraStreamHandler,
             ),
-            IconButton(
-              onPressed: () {
-                ref.watch(controlProvider.notifier).toggleCameraStream();
-              },
-              icon: Icon(control.isCameraStreamStarted
-                  ? Icons.stop
-                  : Icons.play_arrow),
-            )
-          ],
-        ),
-        body: Column(
-          children: [
-            Expanded(
-              flex: 1,
-              child: CameraPreviewWrapper(streamHandler: cameraStreamHandler),
+          ),
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(
+                  child: Card(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      scrollDirection: Axis.horizontal,
+                      itemCount: 15,
+                      itemBuilder: (BuildContext context, int index) => Card(
+                        child: Center(child: Text('Dummy Card Text')),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            Expanded(flex: 1, child: Container())
-          ],
-        ));
+          )
+        ],
+      ),
+    );
+  }
+
+  void makeSequence() {
+    ref.watch(controlProvider.notifier).setCameraStream(true);
+    Future.delayed(
+      Duration(seconds: ref.watch(controlProvider).makeSequenceTime),
+      () => ref.watch(controlProvider.notifier).setCameraStream(false),
+    );
   }
 
   void cameraStreamHandler(CameraImage image) {
@@ -74,7 +101,6 @@ class _CameraPageState extends ConsumerState<CameraPage> {
     ref.watch(isolateFlagProvider.notifier).state = true;
     Future.delayed(
         Duration(milliseconds: ref.watch(controlProvider).frameInterval), () {
-      _isolateSpawn(image);
       ref.watch(isolateFlagProvider.notifier).state = false;
     });
   }

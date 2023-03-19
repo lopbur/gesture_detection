@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gesture_detection_rebuild/provider/event.provider.dart';
 
-class SettingPage extends ConsumerWidget {
-  const SettingPage({super.key});
+class EventSettingPage extends ConsumerWidget {
+  const EventSettingPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
