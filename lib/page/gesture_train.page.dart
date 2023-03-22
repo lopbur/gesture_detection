@@ -1,12 +1,15 @@
 import 'dart:isolate';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:camera/camera.dart';
+import 'package:gesture_detection/util/converter.dart';
 
 import '../provider/client.provider.dart';
 import '../provider/control.provider.dart';
+import '../provider/train.provider.dart';
 import '../util/isolate_util.dart';
 
 import 'widget/camera_preview_wrapper.dart';
@@ -21,6 +24,8 @@ class GestureTrainPage extends ConsumerStatefulWidget {
 
 class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
   final IsolateUtils _isolateUtils = IsolateUtils();
+
+  final testList = <Widget>[];
 
   @override
   void initState() {
@@ -73,9 +78,12 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
                     child: ListView.builder(
                       shrinkWrap: true,
                       scrollDirection: Axis.horizontal,
-                      itemCount: 15,
+                      itemCount: ref.watch(trainSetProvider).planes.length,
                       itemBuilder: (BuildContext context, int index) => Card(
-                        child: Center(child: Text('Dummy Card Text')),
+                        child: Center(
+                          child: Image.memory(
+                              ref.watch(trainSetProvider).planes[index]),
+                        ),
                       ),
                     ),
                   ),
@@ -100,39 +108,40 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
     if (ref.watch(isolateFlagProvider)) return;
     ref.watch(isolateFlagProvider.notifier).state = true;
     Future.delayed(
-        Duration(milliseconds: ref.watch(controlProvider).frameInterval), () {
-      ref.watch(isolateFlagProvider.notifier).state = false;
-    });
+      Duration(milliseconds: ref.watch(controlProvider).frameInterval),
+      () {
+        _isolateSpawn(image, {});
+        ref.watch(isolateFlagProvider.notifier).state = false;
+      },
+    );
   }
 
-  dynamic _isolateSpawn(CameraImage image) async {
+  dynamic _isolateSpawn(
+      CameraImage? image, Map<String, dynamic> runParameter) async {
     final responsePort = ReceivePort();
+
+    Map params = {
+      ...image != null ? {"image": image} : {},
+      ...runParameter,
+    };
 
     _isolateUtils.sendMessage(
       isolateHandler,
       _isolateUtils.sendPort,
       responsePort,
-      params: {'image': image},
+      params: params,
     );
-    final result = {
-      'buffer': await responsePort.first,
-      'height': image.height,
-      'width': image.width
-    };
 
-    ref.watch(clientProvider.notifier).send(MessageType.requestStream, result);
+    // ref.watch(trainSetProvider.notifier).add(await responsePort.first);
   }
 
   static Future<dynamic> isolateHandler(dynamic params) async {
-    final data = params['image'] as CameraImage;
-    final result = Uint8List(
-        data.planes.fold(0, (count, plane) => count + plane.bytes.length));
-    int offset = 0;
-    for (final plane in data.planes) {
-      result.setRange(offset, offset + plane.bytes.length, plane.bytes);
-      offset += plane.bytes.length;
-    }
-
-    return result;
+    final image = params['image'] as CameraImage;
+    // final byte = await ImageConverter.convertYUV420ToRGBByteList(image);
+    final byte = await ImageConverter.convertYUV420ToRGB(image);
+    print(byte);
+    // final Image byteToImage = Image.memory(byte!);
+    // print(byteToImage);
+    return byte;
   }
 }
