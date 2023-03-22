@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:math' as math;
 
 import 'package:camera/camera.dart';
@@ -22,7 +23,7 @@ class CameraPreviewWrapper extends ConsumerStatefulWidget {
 
 class _CameraPreviewWrapperState extends ConsumerState<CameraPreviewWrapper> {
   CameraController? _controller;
-  late List<CameraDescription> _cameras;
+  late List<CameraDescription> _availableCameras;
 
   @override
   void initState() {
@@ -32,35 +33,55 @@ class _CameraPreviewWrapperState extends ConsumerState<CameraPreviewWrapper> {
   }
 
   void initSync() async {
-    _cameras = await availableCameras();
+    await _getAvailableCameras();
+  }
+
+  Future<void> _getAvailableCameras() async {
+    _availableCameras = await availableCameras();
+    await _initCamera(_availableCameras.first);
+  }
+
+  Future<void> _initCamera(CameraDescription description) async {
     _controller = CameraController(
-      _cameras[1],
+      description,
       ResolutionPreset.medium,
       enableAudio: false,
     );
-
-    await _controller!.initialize().then((value) {
+    try {
+      await _controller!.initialize();
       setState(() {});
-    });
+    } catch (e) {
+      log('>>>>> Error has occured while initialized camera: ${e.toString()}');
+    }
   }
 
   @override
   void dispose() {
-    _controller!.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
   void _stopCameraStream() {
     if (!mounted) return;
-    if ((_controller?.value.isStreamingImages ?? false)) {
-      _controller!.stopImageStream();
-    }
+    if (!(_controller?.value.isStreamingImages ?? false)) return;
+    _controller!.stopImageStream();
   }
 
   void _startCameraStream() async {
     if (!mounted) return;
-    if (!(_controller?.value.isStreamingImages ?? true)) {
-      _controller!.startImageStream(widget.streamHandler);
+    if (_controller?.value.isStreamingImages ?? true) return;
+    _controller!.startImageStream(widget.streamHandler);
+  }
+
+  void _setCameraFront(bool c) async {
+    if (!mounted) return;
+    if (_controller?.value.isStreamingImages ?? true) return;
+    final lensDirection =
+        c ? CameraLensDirection.front : CameraLensDirection.back;
+    if (_controller!.description.lensDirection != lensDirection) {
+      final CameraDescription newDescription =
+          _availableCameras.firstWhere((e) => e.lensDirection == lensDirection);
+      await _initCamera(newDescription);
     }
   }
 
@@ -69,15 +90,20 @@ class _CameraPreviewWrapperState extends ConsumerState<CameraPreviewWrapper> {
     final control = ref.watch(controlProvider);
 
     control.isCameraStreamStarted ? _startCameraStream() : _stopCameraStream();
+    _setCameraFront(control.isCameraFront);
 
-    return (_controller?.value.isInitialized ?? false)
-        ? ModelCameraPreview(cameraController: _controller!)
-        : Container(
-            color: Colors.black,
-            child: const Center(
-              child: CircularProgressIndicator(),
+    return Card(
+      clipBehavior: Clip.hardEdge,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+      child: _controller?.value.isInitialized ?? false
+          ? ModelCameraPreview(cameraController: _controller!)
+          : Container(
+              color: Colors.black,
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
             ),
-          );
+    );
   }
 }
 
@@ -87,28 +113,22 @@ class ModelCameraPreview extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Control control = ref.watch(controlProvider);
-
     final widgetSize = MediaQuery.of(context).size;
     final scale =
         1 / (cameraController.value.aspectRatio * widgetSize.aspectRatio) +
             0.05;
 
-    return Card(
-      clipBehavior: Clip.hardEdge,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-      child: Center(
-        child: Stack(
-          children: [
-            Transform.rotate(
-              angle: ref.watch(controlProvider).rotateAngle * math.pi / 180,
-              child: Transform.scale(
-                scale: scale,
-                child: CameraPreview(cameraController),
-              ),
+    return Center(
+      child: Stack(
+        children: [
+          Transform.rotate(
+            angle: ref.watch(controlProvider).rotateAngle * math.pi / 180,
+            child: Transform.scale(
+              scale: scale,
+              child: CameraPreview(cameraController),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -1,8 +1,6 @@
 import 'dart:isolate';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:camera/camera.dart';
 import 'package:gesture_detection/util/converter.dart';
@@ -24,11 +22,6 @@ class GestureTrainPage extends ConsumerStatefulWidget {
 
 class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
   final IsolateUtils _isolateUtils = IsolateUtils();
-
-  Image? testWidget = null;//Image.memory(Uint8List.fromList(List<int>.filled(320*240*3, 255)));
-
-  final testList = <Widget>[];
-
   @override
   void initState() {
     super.initState();
@@ -52,6 +45,11 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
         title: const Text('Gesture Train'),
         actions: [
           IconButton(
+            onPressed: () =>
+                ref.watch(controlProvider.notifier).toggleCameraFront(),
+            icon: const Icon(Icons.flip),
+          ),
+          IconButton(
             onPressed: () => ref.watch(controlProvider.notifier).rotateCamera(),
             icon: const Icon(Icons.rotate_right),
           ),
@@ -68,34 +66,77 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
       body: Column(
         children: [
           Expanded(
-            flex:2,
-            child: CameraPreviewWrapper(
-              streamHandler: cameraStreamHandler,
+            flex: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: CameraPreviewWrapper(
+                streamHandler: cameraStreamHandler,
+              ),
             ),
           ),
           Expanded(
+            flex: 1,
             child: Row(
               children: [
                 Expanded(
-                  child: Card(
-                    // child: testWidget != null ? testWidget : const Text('No image'),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      scrollDirection: Axis.horizontal,
-                      itemCount: ref.watch(trainSetProvider).planes.length,
-                      itemBuilder: (BuildContext context, int index) => Card(
-                        child: Center(
-                          child: Transform.rotate(
-                            angle: -90 * math.pi / 180,
-                            child: Image.memory(ref.watch(trainSetProvider).planes[index],
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 10, right: 10),
+                    child: Card(
+                      color: Colors.blueGrey.shade300,
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        scrollDirection: Axis.horizontal,
+                        itemCount: ref.watch(trainSetProvider).planes.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Image.memory(
+                              ref.watch(trainSetProvider).planes[index],
                             ),
-                          ),
-                        ),
+                          );
+                        },
                       ),
                     ),
                   ),
                 ),
               ],
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  FloatingActionButton(
+                    onPressed: () {
+                      ref.watch(trainSetProvider.notifier).removeAll();
+                      makeSequence();
+                    },
+                    child: Icon(control.isCameraStreamStarted
+                        ? Icons.stop
+                        : Icons.play_arrow),
+                  ),
+                  FloatingActionButton(
+                    onPressed: () {
+                      ref.watch(trainSetProvider.notifier).removeAll();
+                      makeSequence();
+                    },
+                    child: Icon(control.isCameraStreamStarted
+                        ? Icons.stop
+                        : Icons.play_arrow),
+                  ),
+                  FloatingActionButton(
+                    onPressed: () {
+                      ref.watch(trainSetProvider.notifier).removeAll();
+                      makeSequence();
+                    },
+                    child: Icon(control.isCameraStreamStarted
+                        ? Icons.stop
+                        : Icons.play_arrow),
+                  ),
+                ],
+              ),
             ),
           )
         ],
@@ -144,7 +185,7 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
 
   static Future<dynamic> isolateHandler(dynamic params) async {
     final image = params['image'] as CameraImage;
-    final byte = await ImageConverter.convertYUV420ToRGB(image);
+    final byte = await ImageConverter.convertYUV420ToRGBByte(image);
     return byte;
   }
 }

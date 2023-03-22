@@ -22,9 +22,9 @@ Control _$ControlFromJson(Map<String, dynamic> json) {
 mixin _$Control {
   int get frameInterval => throw _privateConstructorUsedError;
   int get makeSequenceTime => throw _privateConstructorUsedError;
-  bool get isCameraRotate => throw _privateConstructorUsedError;
-  bool get isCameraStreamStarted => throw _privateConstructorUsedError;
   int get rotateAngle => throw _privateConstructorUsedError;
+  bool get isCameraFront => throw _privateConstructorUsedError;
+  bool get isCameraStreamStarted => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -39,9 +39,9 @@ abstract class $ControlCopyWith<$Res> {
   $Res call(
       {int frameInterval,
       int makeSequenceTime,
-      bool isCameraRotate,
-      bool isCameraStreamStarted,
-      int rotateAngle});
+      int rotateAngle,
+      bool isCameraFront,
+      bool isCameraStreamStarted});
 }
 
 /// @nodoc
@@ -59,9 +59,9 @@ class _$ControlCopyWithImpl<$Res, $Val extends Control>
   $Res call({
     Object? frameInterval = null,
     Object? makeSequenceTime = null,
-    Object? isCameraRotate = null,
-    Object? isCameraStreamStarted = null,
     Object? rotateAngle = null,
+    Object? isCameraFront = null,
+    Object? isCameraStreamStarted = null,
   }) {
     return _then(_value.copyWith(
       frameInterval: null == frameInterval
@@ -72,18 +72,18 @@ class _$ControlCopyWithImpl<$Res, $Val extends Control>
           ? _value.makeSequenceTime
           : makeSequenceTime // ignore: cast_nullable_to_non_nullable
               as int,
-      isCameraRotate: null == isCameraRotate
-          ? _value.isCameraRotate
-          : isCameraRotate // ignore: cast_nullable_to_non_nullable
+      rotateAngle: null == rotateAngle
+          ? _value.rotateAngle
+          : rotateAngle // ignore: cast_nullable_to_non_nullable
+              as int,
+      isCameraFront: null == isCameraFront
+          ? _value.isCameraFront
+          : isCameraFront // ignore: cast_nullable_to_non_nullable
               as bool,
       isCameraStreamStarted: null == isCameraStreamStarted
           ? _value.isCameraStreamStarted
           : isCameraStreamStarted // ignore: cast_nullable_to_non_nullable
               as bool,
-      rotateAngle: null == rotateAngle
-          ? _value.rotateAngle
-          : rotateAngle // ignore: cast_nullable_to_non_nullable
-              as int,
     ) as $Val);
   }
 }
@@ -98,9 +98,9 @@ abstract class _$$_ControlCopyWith<$Res> implements $ControlCopyWith<$Res> {
   $Res call(
       {int frameInterval,
       int makeSequenceTime,
-      bool isCameraRotate,
-      bool isCameraStreamStarted,
-      int rotateAngle});
+      int rotateAngle,
+      bool isCameraFront,
+      bool isCameraStreamStarted});
 }
 
 /// @nodoc
@@ -115,9 +115,9 @@ class __$$_ControlCopyWithImpl<$Res>
   $Res call({
     Object? frameInterval = null,
     Object? makeSequenceTime = null,
-    Object? isCameraRotate = null,
-    Object? isCameraStreamStarted = null,
     Object? rotateAngle = null,
+    Object? isCameraFront = null,
+    Object? isCameraStreamStarted = null,
   }) {
     return _then(_$_Control(
       frameInterval: null == frameInterval
@@ -128,18 +128,18 @@ class __$$_ControlCopyWithImpl<$Res>
           ? _value.makeSequenceTime
           : makeSequenceTime // ignore: cast_nullable_to_non_nullable
               as int,
-      isCameraRotate: null == isCameraRotate
-          ? _value.isCameraRotate
-          : isCameraRotate // ignore: cast_nullable_to_non_nullable
+      rotateAngle: null == rotateAngle
+          ? _value.rotateAngle
+          : rotateAngle // ignore: cast_nullable_to_non_nullable
+              as int,
+      isCameraFront: null == isCameraFront
+          ? _value.isCameraFront
+          : isCameraFront // ignore: cast_nullable_to_non_nullable
               as bool,
       isCameraStreamStarted: null == isCameraStreamStarted
           ? _value.isCameraStreamStarted
           : isCameraStreamStarted // ignore: cast_nullable_to_non_nullable
               as bool,
-      rotateAngle: null == rotateAngle
-          ? _value.rotateAngle
-          : rotateAngle // ignore: cast_nullable_to_non_nullable
-              as int,
     ));
   }
 }
@@ -150,9 +150,9 @@ class _$_Control implements _Control {
   _$_Control(
       {this.frameInterval = 16,
       this.makeSequenceTime = 3,
-      this.isCameraRotate = false,
-      this.isCameraStreamStarted = false,
-      this.rotateAngle = 0});
+      this.rotateAngle = 0,
+      this.isCameraFront = false,
+      this.isCameraStreamStarted = false});
 
   factory _$_Control.fromJson(Map<String, dynamic> json) =>
       _$$_ControlFromJson(json);
@@ -165,17 +165,17 @@ class _$_Control implements _Control {
   final int makeSequenceTime;
   @override
   @JsonKey()
-  final bool isCameraRotate;
+  final int rotateAngle;
+  @override
+  @JsonKey()
+  final bool isCameraFront;
   @override
   @JsonKey()
   final bool isCameraStreamStarted;
-  @override
-  @JsonKey()
-  final int rotateAngle;
 
   @override
   String toString() {
-    return 'Control(frameInterval: $frameInterval, makeSequenceTime: $makeSequenceTime, isCameraRotate: $isCameraRotate, isCameraStreamStarted: $isCameraStreamStarted, rotateAngle: $rotateAngle)';
+    return 'Control(frameInterval: $frameInterval, makeSequenceTime: $makeSequenceTime, rotateAngle: $rotateAngle, isCameraFront: $isCameraFront, isCameraStreamStarted: $isCameraStreamStarted)';
   }
 
   @override
@@ -187,18 +187,18 @@ class _$_Control implements _Control {
                 other.frameInterval == frameInterval) &&
             (identical(other.makeSequenceTime, makeSequenceTime) ||
                 other.makeSequenceTime == makeSequenceTime) &&
-            (identical(other.isCameraRotate, isCameraRotate) ||
-                other.isCameraRotate == isCameraRotate) &&
-            (identical(other.isCameraStreamStarted, isCameraStreamStarted) ||
-                other.isCameraStreamStarted == isCameraStreamStarted) &&
             (identical(other.rotateAngle, rotateAngle) ||
-                other.rotateAngle == rotateAngle));
+                other.rotateAngle == rotateAngle) &&
+            (identical(other.isCameraFront, isCameraFront) ||
+                other.isCameraFront == isCameraFront) &&
+            (identical(other.isCameraStreamStarted, isCameraStreamStarted) ||
+                other.isCameraStreamStarted == isCameraStreamStarted));
   }
 
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, frameInterval, makeSequenceTime,
-      isCameraRotate, isCameraStreamStarted, rotateAngle);
+      rotateAngle, isCameraFront, isCameraStreamStarted);
 
   @JsonKey(ignore: true)
   @override
@@ -218,9 +218,9 @@ abstract class _Control implements Control {
   factory _Control(
       {final int frameInterval,
       final int makeSequenceTime,
-      final bool isCameraRotate,
-      final bool isCameraStreamStarted,
-      final int rotateAngle}) = _$_Control;
+      final int rotateAngle,
+      final bool isCameraFront,
+      final bool isCameraStreamStarted}) = _$_Control;
 
   factory _Control.fromJson(Map<String, dynamic> json) = _$_Control.fromJson;
 
@@ -229,11 +229,11 @@ abstract class _Control implements Control {
   @override
   int get makeSequenceTime;
   @override
-  bool get isCameraRotate;
+  int get rotateAngle;
+  @override
+  bool get isCameraFront;
   @override
   bool get isCameraStreamStarted;
-  @override
-  int get rotateAngle;
   @override
   @JsonKey(ignore: true)
   _$$_ControlCopyWith<_$_Control> get copyWith =>

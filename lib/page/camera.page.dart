@@ -45,7 +45,12 @@ class _CameraPageState extends ConsumerState<CameraPage> {
           actions: [
             IconButton(
               onPressed: () =>
-                  ref.watch(controlProvider.notifier).toggleCameraRotate(),
+                  ref.watch(controlProvider.notifier).toggleCameraFront(),
+              icon: const Icon(Icons.flip),
+            ),
+            IconButton(
+              onPressed: () =>
+                  ref.watch(controlProvider.notifier).rotateCamera(),
               icon: const Icon(Icons.rotate_right),
             ),
             IconButton(
