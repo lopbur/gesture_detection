@@ -16,6 +16,7 @@ class Control with _$Control {
     @Default(3) int makeSequenceTime,
     @Default(false) bool isCameraRotate,
     @Default(false) bool isCameraStreamStarted,
+    @Default(0) int rotateAngle,
   }) = _Control;
 
   factory Control.fromJson(Map<String, dynamic> json) =>
@@ -43,6 +44,12 @@ class ControlProvider extends StateNotifier<Control> {
 
   void toggleCameraStream() {
     state = state.copyWith(isCameraStreamStarted: !state.isCameraStreamStarted);
+  }
+
+  void rotateCamera() {
+    int angle = state.rotateAngle;
+    angle = (angle + 90) >= 360 ? 0 : angle + 90;
+    state = state.copyWith(rotateAngle: angle); 
   }
 }
 

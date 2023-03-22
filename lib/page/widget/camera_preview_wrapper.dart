@@ -34,7 +34,7 @@ class _CameraPreviewWrapperState extends ConsumerState<CameraPreviewWrapper> {
   void initSync() async {
     _cameras = await availableCameras();
     _controller = CameraController(
-      _cameras.first,
+      _cameras[1],
       ResolutionPreset.medium,
       enableAudio: false,
     );
@@ -101,7 +101,7 @@ class ModelCameraPreview extends ConsumerWidget {
         child: Stack(
           children: [
             Transform.rotate(
-              angle: (control.isCameraRotate ? -90 : 0) * math.pi / 180,
+              angle: ref.watch(controlProvider).rotateAngle * math.pi / 180,
               child: Transform.scale(
                 scale: scale,
                 child: CameraPreview(cameraController),

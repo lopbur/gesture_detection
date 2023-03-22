@@ -123,7 +123,7 @@ class __$$_TrainSetCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_TrainSet with DiagnosticableTreeMixin implements _TrainSet {
+class _$_TrainSet implements _TrainSet {
   _$_TrainSet(
       {@Uint8ListConverter() final List<Uint8List> planes = const [],
       this.format = 'YUV420',
@@ -151,18 +151,8 @@ class _$_TrainSet with DiagnosticableTreeMixin implements _TrainSet {
   final String label;
 
   @override
-  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+  String toString() {
     return 'TrainSet(planes: $planes, format: $format, label: $label)';
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty('type', 'TrainSet'))
-      ..add(DiagnosticsProperty('planes', planes))
-      ..add(DiagnosticsProperty('format', format))
-      ..add(DiagnosticsProperty('label', label));
   }
 
   @override

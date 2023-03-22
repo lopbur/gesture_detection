@@ -95,7 +95,7 @@ class ImageConverter {
     return null;
   }
 
-  static Future<Image?> convertYUV420ToRGB(CameraImage cameraImage) async {
+  static Future<Uint8List?> convertYUV420ToRGB(CameraImage cameraImage) async {
     try {
       const shift = (0xFF << 24);
 
@@ -136,7 +136,7 @@ class ImageConverter {
       image_lib.PngEncoder pngEncoder =
           image_lib.PngEncoder(level: 0, filter: image_lib.PngFilter.none);
       Uint8List png = pngEncoder.encode(image);
-      return Image.memory(png);
+      return png;
     } catch (e) {
       print(
           '>>>>>> Error has occured while convert YUV420 to RGB: ${e.toString()}');

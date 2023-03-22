@@ -1,5 +1,5 @@
 import 'dart:isolate';
-import 'dart:developer';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -24,6 +24,8 @@ class GestureTrainPage extends ConsumerStatefulWidget {
 
 class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
   final IsolateUtils _isolateUtils = IsolateUtils();
+
+  Image? testWidget = null;//Image.memory(Uint8List.fromList(List<int>.filled(320*240*3, 255)));
 
   final testList = <Widget>[];
 
@@ -50,12 +52,12 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
         title: const Text('Gesture Train'),
         actions: [
           IconButton(
-            onPressed: () =>
-                ref.watch(controlProvider.notifier).toggleCameraRotate(),
+            onPressed: () => ref.watch(controlProvider.notifier).rotateCamera(),
             icon: const Icon(Icons.rotate_right),
           ),
           IconButton(
             onPressed: () {
+              ref.watch(trainSetProvider.notifier).removeAll();
               makeSequence();
             },
             icon: Icon(
@@ -66,6 +68,7 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
       body: Column(
         children: [
           Expanded(
+            flex:2,
             child: CameraPreviewWrapper(
               streamHandler: cameraStreamHandler,
             ),
@@ -75,14 +78,18 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
               children: [
                 Expanded(
                   child: Card(
+                    // child: testWidget != null ? testWidget : const Text('No image'),
                     child: ListView.builder(
                       shrinkWrap: true,
                       scrollDirection: Axis.horizontal,
                       itemCount: ref.watch(trainSetProvider).planes.length,
                       itemBuilder: (BuildContext context, int index) => Card(
                         child: Center(
-                          child: Image.memory(
-                              ref.watch(trainSetProvider).planes[index]),
+                          child: Transform.rotate(
+                            angle: -90 * math.pi / 180,
+                            child: Image.memory(ref.watch(trainSetProvider).planes[index],
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -131,17 +138,13 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
       responsePort,
       params: params,
     );
-
-    // ref.watch(trainSetProvider.notifier).add(await responsePort.first);
+    // testWidget = await responsePort.first;
+    ref.watch(trainSetProvider.notifier).add(await responsePort.first);
   }
 
   static Future<dynamic> isolateHandler(dynamic params) async {
     final image = params['image'] as CameraImage;
-    // final byte = await ImageConverter.convertYUV420ToRGBByteList(image);
     final byte = await ImageConverter.convertYUV420ToRGB(image);
-    print(byte);
-    // final Image byteToImage = Image.memory(byte!);
-    // print(byteToImage);
     return byte;
   }
 }
