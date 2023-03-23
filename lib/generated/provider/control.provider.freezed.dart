@@ -20,11 +20,19 @@ Control _$ControlFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Control {
-  int get frameInterval => throw _privateConstructorUsedError;
-  int get makeSequenceTime => throw _privateConstructorUsedError;
-  int get rotateAngle => throw _privateConstructorUsedError;
-  bool get isCameraFront => throw _privateConstructorUsedError;
-  bool get isCameraStreamStarted => throw _privateConstructorUsedError;
+// global control about camera_preview_wrapper
+  int get frameInterval =>
+      throw _privateConstructorUsedError; // get image per frame
+  int get rotateAngle =>
+      throw _privateConstructorUsedError; // camera preview angle, clockwise
+  bool get isCameraFront =>
+      throw _privateConstructorUsedError; // camera position
+  bool get isCameraStreamStarted =>
+      throw _privateConstructorUsedError; // camera stream flag
+// gesture_train.page
+  int get makeSequenceTime =>
+      throw _privateConstructorUsedError; // user start make train set flag
+  bool get showPreviewTrain => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -38,10 +46,11 @@ abstract class $ControlCopyWith<$Res> {
   @useResult
   $Res call(
       {int frameInterval,
-      int makeSequenceTime,
       int rotateAngle,
       bool isCameraFront,
-      bool isCameraStreamStarted});
+      bool isCameraStreamStarted,
+      int makeSequenceTime,
+      bool showPreviewTrain});
 }
 
 /// @nodoc
@@ -58,19 +67,16 @@ class _$ControlCopyWithImpl<$Res, $Val extends Control>
   @override
   $Res call({
     Object? frameInterval = null,
-    Object? makeSequenceTime = null,
     Object? rotateAngle = null,
     Object? isCameraFront = null,
     Object? isCameraStreamStarted = null,
+    Object? makeSequenceTime = null,
+    Object? showPreviewTrain = null,
   }) {
     return _then(_value.copyWith(
       frameInterval: null == frameInterval
           ? _value.frameInterval
           : frameInterval // ignore: cast_nullable_to_non_nullable
-              as int,
-      makeSequenceTime: null == makeSequenceTime
-          ? _value.makeSequenceTime
-          : makeSequenceTime // ignore: cast_nullable_to_non_nullable
               as int,
       rotateAngle: null == rotateAngle
           ? _value.rotateAngle
@@ -83,6 +89,14 @@ class _$ControlCopyWithImpl<$Res, $Val extends Control>
       isCameraStreamStarted: null == isCameraStreamStarted
           ? _value.isCameraStreamStarted
           : isCameraStreamStarted // ignore: cast_nullable_to_non_nullable
+              as bool,
+      makeSequenceTime: null == makeSequenceTime
+          ? _value.makeSequenceTime
+          : makeSequenceTime // ignore: cast_nullable_to_non_nullable
+              as int,
+      showPreviewTrain: null == showPreviewTrain
+          ? _value.showPreviewTrain
+          : showPreviewTrain // ignore: cast_nullable_to_non_nullable
               as bool,
     ) as $Val);
   }
@@ -97,10 +111,11 @@ abstract class _$$_ControlCopyWith<$Res> implements $ControlCopyWith<$Res> {
   @useResult
   $Res call(
       {int frameInterval,
-      int makeSequenceTime,
       int rotateAngle,
       bool isCameraFront,
-      bool isCameraStreamStarted});
+      bool isCameraStreamStarted,
+      int makeSequenceTime,
+      bool showPreviewTrain});
 }
 
 /// @nodoc
@@ -114,19 +129,16 @@ class __$$_ControlCopyWithImpl<$Res>
   @override
   $Res call({
     Object? frameInterval = null,
-    Object? makeSequenceTime = null,
     Object? rotateAngle = null,
     Object? isCameraFront = null,
     Object? isCameraStreamStarted = null,
+    Object? makeSequenceTime = null,
+    Object? showPreviewTrain = null,
   }) {
     return _then(_$_Control(
       frameInterval: null == frameInterval
           ? _value.frameInterval
           : frameInterval // ignore: cast_nullable_to_non_nullable
-              as int,
-      makeSequenceTime: null == makeSequenceTime
-          ? _value.makeSequenceTime
-          : makeSequenceTime // ignore: cast_nullable_to_non_nullable
               as int,
       rotateAngle: null == rotateAngle
           ? _value.rotateAngle
@@ -140,6 +152,14 @@ class __$$_ControlCopyWithImpl<$Res>
           ? _value.isCameraStreamStarted
           : isCameraStreamStarted // ignore: cast_nullable_to_non_nullable
               as bool,
+      makeSequenceTime: null == makeSequenceTime
+          ? _value.makeSequenceTime
+          : makeSequenceTime // ignore: cast_nullable_to_non_nullable
+              as int,
+      showPreviewTrain: null == showPreviewTrain
+          ? _value.showPreviewTrain
+          : showPreviewTrain // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -149,33 +169,44 @@ class __$$_ControlCopyWithImpl<$Res>
 class _$_Control implements _Control {
   _$_Control(
       {this.frameInterval = 16,
-      this.makeSequenceTime = 3,
       this.rotateAngle = 0,
       this.isCameraFront = false,
-      this.isCameraStreamStarted = false});
+      this.isCameraStreamStarted = false,
+      this.makeSequenceTime = 5,
+      this.showPreviewTrain = false});
 
   factory _$_Control.fromJson(Map<String, dynamic> json) =>
       _$$_ControlFromJson(json);
 
+// global control about camera_preview_wrapper
   @override
   @JsonKey()
   final int frameInterval;
-  @override
-  @JsonKey()
-  final int makeSequenceTime;
+// get image per frame
   @override
   @JsonKey()
   final int rotateAngle;
+// camera preview angle, clockwise
   @override
   @JsonKey()
   final bool isCameraFront;
+// camera position
   @override
   @JsonKey()
   final bool isCameraStreamStarted;
+// camera stream flag
+// gesture_train.page
+  @override
+  @JsonKey()
+  final int makeSequenceTime;
+// user start make train set flag
+  @override
+  @JsonKey()
+  final bool showPreviewTrain;
 
   @override
   String toString() {
-    return 'Control(frameInterval: $frameInterval, makeSequenceTime: $makeSequenceTime, rotateAngle: $rotateAngle, isCameraFront: $isCameraFront, isCameraStreamStarted: $isCameraStreamStarted)';
+    return 'Control(frameInterval: $frameInterval, rotateAngle: $rotateAngle, isCameraFront: $isCameraFront, isCameraStreamStarted: $isCameraStreamStarted, makeSequenceTime: $makeSequenceTime, showPreviewTrain: $showPreviewTrain)';
   }
 
   @override
@@ -185,20 +216,22 @@ class _$_Control implements _Control {
             other is _$_Control &&
             (identical(other.frameInterval, frameInterval) ||
                 other.frameInterval == frameInterval) &&
-            (identical(other.makeSequenceTime, makeSequenceTime) ||
-                other.makeSequenceTime == makeSequenceTime) &&
             (identical(other.rotateAngle, rotateAngle) ||
                 other.rotateAngle == rotateAngle) &&
             (identical(other.isCameraFront, isCameraFront) ||
                 other.isCameraFront == isCameraFront) &&
             (identical(other.isCameraStreamStarted, isCameraStreamStarted) ||
-                other.isCameraStreamStarted == isCameraStreamStarted));
+                other.isCameraStreamStarted == isCameraStreamStarted) &&
+            (identical(other.makeSequenceTime, makeSequenceTime) ||
+                other.makeSequenceTime == makeSequenceTime) &&
+            (identical(other.showPreviewTrain, showPreviewTrain) ||
+                other.showPreviewTrain == showPreviewTrain));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, frameInterval, makeSequenceTime,
-      rotateAngle, isCameraFront, isCameraStreamStarted);
+  int get hashCode => Object.hash(runtimeType, frameInterval, rotateAngle,
+      isCameraFront, isCameraStreamStarted, makeSequenceTime, showPreviewTrain);
 
   @JsonKey(ignore: true)
   @override
@@ -217,23 +250,27 @@ class _$_Control implements _Control {
 abstract class _Control implements Control {
   factory _Control(
       {final int frameInterval,
-      final int makeSequenceTime,
       final int rotateAngle,
       final bool isCameraFront,
-      final bool isCameraStreamStarted}) = _$_Control;
+      final bool isCameraStreamStarted,
+      final int makeSequenceTime,
+      final bool showPreviewTrain}) = _$_Control;
 
   factory _Control.fromJson(Map<String, dynamic> json) = _$_Control.fromJson;
 
-  @override
+  @override // global control about camera_preview_wrapper
   int get frameInterval;
-  @override
-  int get makeSequenceTime;
-  @override
+  @override // get image per frame
   int get rotateAngle;
-  @override
+  @override // camera preview angle, clockwise
   bool get isCameraFront;
-  @override
+  @override // camera position
   bool get isCameraStreamStarted;
+  @override // camera stream flag
+// gesture_train.page
+  int get makeSequenceTime;
+  @override // user start make train set flag
+  bool get showPreviewTrain;
   @override
   @JsonKey(ignore: true)
   _$$_ControlCopyWith<_$_Control> get copyWith =>

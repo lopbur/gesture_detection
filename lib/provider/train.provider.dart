@@ -8,6 +8,13 @@ import '../util/converter.dart';
 part '../generated/provider/train.provider.freezed.dart';
 part '../generated/provider/train.provider.g.dart';
 
+int previewImageIndex = 0;
+final previewImageIndexProvider = StateProvider<int>(
+  (ref) {
+    return previewImageIndex;
+  },
+);
+
 @freezed
 class TrainSet with _$TrainSet {
   factory TrainSet({

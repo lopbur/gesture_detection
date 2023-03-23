@@ -97,11 +97,6 @@ class ImageConverter {
           g = g.clamp(0, 255);
           b = b.clamp(0, 255);
 
-          // Use 255 for alpha value, no transparency. ARGB values are
-          // positioned in each byte of a single 4 byte integer
-          // [AAAAAAAARRRRRRRRGGGGGGGGBBBBBBBB]
-          final int argbIndex = h * imageWidth + w;
-
           image.setPixelRgba(w, h, r, g, b, shift);
         }
       }

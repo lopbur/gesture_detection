@@ -12,11 +12,15 @@ final isolateFlagProvider = StateProvider<bool>(
 @freezed
 class Control with _$Control {
   factory Control({
-    @Default(16) int frameInterval,
-    @Default(3) int makeSequenceTime,
-    @Default(0) int rotateAngle,
-    @Default(false) bool isCameraFront,
-    @Default(false) bool isCameraStreamStarted,
+    // global control about camera_preview_wrapper
+    @Default(16) int frameInterval, // get image per frame
+    @Default(0) int rotateAngle, // camera preview angle, clockwise
+    @Default(false) bool isCameraFront, // camera position
+    @Default(false) bool isCameraStreamStarted, // camera stream flag
+    // gesture_train.page
+    @Default(5) int makeSequenceTime, // user start make train set flag
+    @Default(false)
+        bool showPreviewTrain, // show user trained image as frame flag
   }) = _Control;
 
   factory Control.fromJson(Map<String, dynamic> json) =>
@@ -30,12 +34,10 @@ class ControlProvider extends StateNotifier<Control> {
     state = state.copyWith(frameInterval: (1000 / fps).floor());
   }
 
-  void setCameraStream(bool val) {
-    state = state.copyWith(isCameraStreamStarted: val);
-  }
-
-  void setMakeSequenceTime(int val) {
-    state = state.copyWith(makeSequenceTime: val);
+  void rotateCamera() {
+    int angle = state.rotateAngle;
+    angle = (angle + 90) >= 360 ? 0 : angle + 90;
+    state = state.copyWith(rotateAngle: angle);
   }
 
   void toggleCameraFront() {
@@ -46,10 +48,16 @@ class ControlProvider extends StateNotifier<Control> {
     state = state.copyWith(isCameraStreamStarted: !state.isCameraStreamStarted);
   }
 
-  void rotateCamera() {
-    int angle = state.rotateAngle;
-    angle = (angle + 90) >= 360 ? 0 : angle + 90;
-    state = state.copyWith(rotateAngle: angle);
+  void setCameraStream(bool val) {
+    state = state.copyWith(isCameraStreamStarted: val);
+  }
+
+  void setMakeSequenceTime(int val) {
+    state = state.copyWith(makeSequenceTime: val);
+  }
+
+  void setShowPreviewTrain(bool val) {
+    state = state.copyWith(showPreviewTrain: val);
   }
 }
 

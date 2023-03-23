@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:isolate';
 
 import 'package:flutter/material.dart';
@@ -22,6 +23,7 @@ class GestureTrainPage extends ConsumerStatefulWidget {
 
 class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
   final IsolateUtils _isolateUtils = IsolateUtils();
+  Timer? previewImageTimer;
 
   @override
   void initState() {
@@ -29,6 +31,29 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
     _isolateUtils.initIsolate();
 
     Future.microtask(() => ref.watch(clientProvider.notifier).connect());
+  }
+
+  void previewImagePeriodic(bool periodic) {
+    previewImageTimer?.cancel();
+    previewImageTimer = null;
+    ref.watch(previewImageIndexProvider.notifier).state = 0;
+    previewImageTimer = Timer.periodic(
+      const Duration(milliseconds: 50),
+      (t) {
+        if (ref.watch(controlProvider).showPreviewTrain) {
+          ref.watch(previewImageIndexProvider.notifier).state++;
+          if (ref.watch(previewImageIndexProvider) ==
+              ref.watch(trainSetProvider).planes.length - 1) {
+            ref.watch(previewImageIndexProvider.notifier).state = 0;
+          }
+        }
+      },
+    );
+
+    if (!ref.watch(controlProvider).showPreviewTrain) {
+      previewImageTimer?.cancel();
+      previewImageTimer = null;
+    }
   }
 
   @override
@@ -54,14 +79,6 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
             onPressed: () => ref.watch(controlProvider.notifier).rotateCamera(),
             icon: const Icon(Icons.rotate_right),
           ),
-          IconButton(
-            onPressed: () {
-              ref.watch(trainSetProvider.notifier).removeAll();
-              makeSequence();
-            },
-            icon: Icon(
-                control.isCameraStreamStarted ? Icons.stop : Icons.play_arrow),
-          )
         ],
       ),
       body: Column(
@@ -109,14 +126,42 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  Text(
+                      'current frame: ${ref.watch(previewImageIndexProvider)}'),
                   FloatingActionButton(
                     onPressed: () {
-                      ref.watch(trainSetProvider.notifier).removeAll();
-                      makeSequence();
+                      ref
+                          .watch(controlProvider.notifier)
+                          .setShowPreviewTrain(true);
+                      previewImagePeriodic(true);
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return Dialog(
+                            child: Consumer(
+                              builder: (context, ref, child) {
+                                return Wrap(
+                                  children: [
+                                    Image.memory(
+                                      ref.watch(trainSetProvider).planes[
+                                          ref.watch(previewImageIndexProvider)],
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ).then(
+                        (val) {
+                          previewImagePeriodic(false);
+                          ref
+                              .watch(controlProvider.notifier)
+                              .setShowPreviewTrain(false);
+                        },
+                      );
                     },
-                    child: Icon(control.isCameraStreamStarted
-                        ? Icons.stop
-                        : Icons.play_arrow),
+                    child: const Icon(Icons.image),
                   ),
                   FloatingActionButton(
                     onPressed: () {
@@ -129,12 +174,11 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
                   ),
                   FloatingActionButton(
                     onPressed: () {
-                      ref.watch(trainSetProvider.notifier).removeAll();
-                      makeSequence();
+                      ref
+                          .watch(controlProvider.notifier)
+                          .setMakeSequenceTime(3);
                     },
-                    child: Icon(control.isCameraStreamStarted
-                        ? Icons.stop
-                        : Icons.play_arrow),
+                    child: const Icon(Icons.send),
                   ),
                 ],
               ),
