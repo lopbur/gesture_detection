@@ -22,6 +22,7 @@ class GestureTrainPage extends ConsumerStatefulWidget {
 
 class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
   final IsolateUtils _isolateUtils = IsolateUtils();
+
   @override
   void initState() {
     super.initState();
