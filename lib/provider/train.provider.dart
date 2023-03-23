@@ -8,6 +8,16 @@ import '../util/converter.dart';
 part '../generated/provider/train.provider.freezed.dart';
 part '../generated/provider/train.provider.g.dart';
 
+int previewImageIndex = 0;
+final previewImageIndexProvider = StateProvider<int>(
+  (ref) {
+    final previewLength = ref.watch(trainSetProvider).planes.length;
+    if (ref.watch(trainSetProvider).planes.isEmpty) return 0;
+    if (previewImageIndex >= previewLength) previewImageIndex = 0;
+    return previewImageIndex;
+  },
+);
+
 @freezed
 class TrainSet with _$TrainSet {
   factory TrainSet({
