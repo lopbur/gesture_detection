@@ -57,10 +57,6 @@ class EventSettingMenu extends ConsumerStatefulWidget {
 class _EventSettingMenuState extends ConsumerState<EventSettingMenu> {
   bool isExpanded = false;
 
-  Widget getConfigList(int index, EventSetting e) {
-    return Text('$index, $e');
-  }
-
   @override
   Widget build(BuildContext context) {
     final config = ref.watch(eventProvider)[widget.index];

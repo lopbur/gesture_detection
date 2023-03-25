@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:isolate';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:camera/camera.dart';
+import 'package:gesture_detection/page/widget/image_sequence.dart';
 import 'package:gesture_detection/util/converter.dart';
 
 import '../provider/client.provider.dart';
@@ -23,7 +25,6 @@ class GestureTrainPage extends ConsumerStatefulWidget {
 
 class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
   final IsolateUtils _isolateUtils = IsolateUtils();
-  Timer? previewImageTimer;
 
   @override
   void initState() {
@@ -31,29 +32,6 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
     _isolateUtils.initIsolate();
 
     Future.microtask(() => ref.watch(clientProvider.notifier).connect());
-  }
-
-  void previewImagePeriodic(bool periodic) {
-    previewImageTimer?.cancel();
-    previewImageTimer = null;
-    ref.watch(previewImageIndexProvider.notifier).state = 0;
-    previewImageTimer = Timer.periodic(
-      const Duration(milliseconds: 50),
-      (t) {
-        if (ref.watch(controlProvider).showPreviewTrain) {
-          ref.watch(previewImageIndexProvider.notifier).state++;
-          if (ref.watch(previewImageIndexProvider) ==
-              ref.watch(trainSetProvider).planes.length - 1) {
-            ref.watch(previewImageIndexProvider.notifier).state = 0;
-          }
-        }
-      },
-    );
-
-    if (!ref.watch(controlProvider).showPreviewTrain) {
-      previewImageTimer?.cancel();
-      previewImageTimer = null;
-    }
   }
 
   @override
@@ -84,82 +62,70 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
       body: Column(
         children: [
           Expanded(
-            flex: 2,
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: CameraPreviewWrapper(
-                streamHandler: cameraStreamHandler,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Row(
+            flex: 4,
+            child: Column(
               children: [
                 Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 10, right: 10),
-                    child: Card(
-                      color: Colors.blueGrey.shade300,
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        itemCount: ref.watch(trainSetProvider).planes.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Image.memory(
-                              ref.watch(trainSetProvider).planes[index],
-                            ),
-                          );
-                        },
-                      ),
+                  flex: 3,
+                  child: ClipRect(
+                    clipBehavior: Clip.hardEdge,
+                    child: CameraPreviewWrapper(
+                      streamHandler: cameraStreamHandler,
                     ),
+                  ),
+                ),
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          scrollDirection: Axis.horizontal,
+                          itemCount: ref.watch(trainSetProvider).planes.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Image.memory(
+                                ref.watch(trainSetProvider).planes[index],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
+          const Divider(
+            height: 0,
+            thickness: 2,
+          ),
           Expanded(
-            flex: 1,
             child: Center(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Text(
-                      'current frame: ${ref.watch(previewImageIndexProvider)}'),
                   FloatingActionButton(
                     onPressed: () {
-                      ref
-                          .watch(controlProvider.notifier)
-                          .setShowPreviewTrain(true);
-                      previewImagePeriodic(true);
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return Dialog(
-                            child: Consumer(
-                              builder: (context, ref, child) {
-                                return Wrap(
-                                  children: [
-                                    Image.memory(
-                                      ref.watch(trainSetProvider).planes[
-                                          ref.watch(previewImageIndexProvider)],
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                          );
-                        },
-                      ).then(
-                        (val) {
-                          previewImagePeriodic(false);
-                          ref
-                              .watch(controlProvider.notifier)
-                              .setShowPreviewTrain(false);
-                        },
-                      );
+                      if (!ref.watch(controlProvider).isCameraStreamStarted) {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return Dialog(
+                              child: Consumer(
+                                builder: (context, ref, child) {
+                                  return const Card(
+                                    child: ImageSequence(),
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        );
+                      }
                     },
                     child: const Icon(Icons.image),
                   ),
@@ -189,6 +155,7 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
     );
   }
 
+  //do capture camera stream to make train set sequences.
   void makeSequence() {
     ref.watch(controlProvider.notifier).setCameraStream(true);
     Future.delayed(
@@ -203,19 +170,23 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
     Future.delayed(
       Duration(milliseconds: ref.watch(controlProvider).frameInterval),
       () {
-        _isolateSpawn(image, {});
+        _isolateSpawn(
+          {'image': image},
+          (result) {
+            return ref.watch(trainSetProvider.notifier).add(result);
+          },
+        );
         ref.watch(isolateFlagProvider.notifier).state = false;
       },
     );
   }
 
-  dynamic _isolateSpawn(
-      CameraImage? image, Map<String, dynamic> runParameter) async {
+  dynamic _isolateSpawn(Map<String, dynamic>? handlerParameter,
+      void Function(dynamic) afterCallback) async {
     final responsePort = ReceivePort();
 
     Map params = {
-      ...image != null ? {"image": image} : {},
-      ...runParameter,
+      ...handlerParameter ?? {},
     };
 
     _isolateUtils.sendMessage(
@@ -224,8 +195,8 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
       responsePort,
       params: params,
     );
-    // testWidget = await responsePort.first;
-    ref.watch(trainSetProvider.notifier).add(await responsePort.first);
+
+    afterCallback(await responsePort.first);
   }
 
   static Future<dynamic> isolateHandler(dynamic params) async {

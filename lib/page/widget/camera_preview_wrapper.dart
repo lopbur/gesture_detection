@@ -92,18 +92,14 @@ class _CameraPreviewWrapperState extends ConsumerState<CameraPreviewWrapper> {
     control.isCameraStreamStarted ? _startCameraStream() : _stopCameraStream();
     _setCameraFront(control.isCameraFront);
 
-    return Card(
-      clipBehavior: Clip.hardEdge,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-      child: _controller?.value.isInitialized ?? false
-          ? ModelCameraPreview(cameraController: _controller!)
-          : Container(
-              color: Colors.black,
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
+    return _controller?.value.isInitialized ?? false
+        ? ModelCameraPreview(cameraController: _controller!)
+        : Container(
+            color: Colors.black,
+            child: const Center(
+              child: CircularProgressIndicator(),
             ),
-    );
+          );
   }
 }
 
@@ -118,17 +114,16 @@ class ModelCameraPreview extends ConsumerWidget {
         1 / (cameraController.value.aspectRatio * widgetSize.aspectRatio) +
             0.05;
 
-    return Center(
-      child: Stack(
-        children: [
-          Transform.rotate(
-            angle: ref.watch(controlProvider).rotateAngle * math.pi / 180,
-            child: Transform.scale(
-              scale: scale,
-              child: CameraPreview(cameraController),
-            ),
+    return Container(
+      color: Colors.grey,
+      child: Center(
+        child: Transform.rotate(
+          angle: ref.watch(controlProvider).rotateAngle * math.pi / 180,
+          child: Transform.scale(
+            scale: scale,
+            child: CameraPreview(cameraController),
           ),
-        ],
+        ),
       ),
     );
   }

@@ -19,8 +19,6 @@ class Control with _$Control {
     @Default(false) bool isCameraStreamStarted, // camera stream flag
     // gesture_train.page
     @Default(5) int makeSequenceTime, // user start make train set flag
-    @Default(false)
-        bool showPreviewTrain, // show user trained image as frame flag
   }) = _Control;
 
   factory Control.fromJson(Map<String, dynamic> json) =>
@@ -54,10 +52,6 @@ class ControlProvider extends StateNotifier<Control> {
 
   void setMakeSequenceTime(int val) {
     state = state.copyWith(makeSequenceTime: val);
-  }
-
-  void setShowPreviewTrain(bool val) {
-    state = state.copyWith(showPreviewTrain: val);
   }
 }
 

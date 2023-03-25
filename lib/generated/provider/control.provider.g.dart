@@ -12,7 +12,6 @@ _$_Control _$$_ControlFromJson(Map<String, dynamic> json) => _$_Control(
       isCameraFront: json['isCameraFront'] as bool? ?? false,
       isCameraStreamStarted: json['isCameraStreamStarted'] as bool? ?? false,
       makeSequenceTime: json['makeSequenceTime'] as int? ?? 5,
-      showPreviewTrain: json['showPreviewTrain'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$$_ControlToJson(_$_Control instance) =>
@@ -22,5 +21,4 @@ Map<String, dynamic> _$$_ControlToJson(_$_Control instance) =>
       'isCameraFront': instance.isCameraFront,
       'isCameraStreamStarted': instance.isCameraStreamStarted,
       'makeSequenceTime': instance.makeSequenceTime,
-      'showPreviewTrain': instance.showPreviewTrain,
     };
