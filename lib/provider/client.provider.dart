@@ -8,9 +8,10 @@ import 'package:socket_io_client/socket_io_client.dart';
 import '../util/common_util.dart';
 
 enum MessageType {
-  requestStream('req_stream'),
-  responseLandmark('res_landmark'),
-  responseGesture('res_gesture');
+  handStream('hand_stream'),
+  registerGesture('register_gesture'),
+  requestLandmark('request_landmark'),
+  requestGesture('request_gesture');
 
   const MessageType(this.value);
   final String value;

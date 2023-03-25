@@ -99,7 +99,7 @@ class _CameraPageState extends ConsumerState<CameraPage> {
       'width': image.width
     };
 
-    ref.watch(clientProvider.notifier).send(MessageType.requestStream, result);
+    ref.watch(clientProvider.notifier).send(MessageType.handStream, result);
   }
 
   static Future<dynamic> isolateHandler(dynamic params) async {

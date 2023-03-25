@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../provider/event.provider.dart';
+import '../provider/user_setting.provider.dart';
 
 class EventSettingPage extends ConsumerWidget {
   const EventSettingPage({super.key});

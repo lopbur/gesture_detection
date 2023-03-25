@@ -43,6 +43,7 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
   @override
   Widget build(BuildContext context) {
     final control = ref.watch(controlProvider);
+    final train = ref.watch(trainSetProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -82,12 +83,12 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
                         child: ListView.builder(
                           shrinkWrap: true,
                           scrollDirection: Axis.horizontal,
-                          itemCount: ref.watch(trainSetProvider).planes.length,
+                          itemCount: train.planes.length,
                           itemBuilder: (BuildContext context, int index) {
                             return Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Image.memory(
-                                ref.watch(trainSetProvider).planes[index],
+                                train.planes[index],
                               ),
                             );
                           },
@@ -110,7 +111,7 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
                 children: [
                   FloatingActionButton(
                     onPressed: () {
-                      if (!ref.watch(controlProvider).isCameraStreamStarted) {
+                      if (!control.isCameraStreamStarted) {
                         showDialog(
                           context: context,
                           builder: (context) {
@@ -171,6 +172,7 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
       Duration(milliseconds: ref.watch(controlProvider).frameInterval),
       () {
         _isolateSpawn(
+          imageConvertIsolateHandler,
           {'image': image},
           (result) {
             return ref.watch(trainSetProvider.notifier).add(result);
@@ -181,8 +183,10 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
     );
   }
 
-  dynamic _isolateSpawn(Map<String, dynamic>? handlerParameter,
-      void Function(dynamic) afterCallback) async {
+  dynamic _isolateSpawn(
+      Future<dynamic> Function(dynamic) isolateHandler,
+      Map<String, dynamic>? handlerParameter,
+      void Function(dynamic) postCallback) async {
     final responsePort = ReceivePort();
 
     Map params = {
@@ -196,12 +200,16 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
       params: params,
     );
 
-    afterCallback(await responsePort.first);
+    postCallback(await responsePort.first);
   }
 
-  static Future<dynamic> isolateHandler(dynamic params) async {
+  static Future<dynamic> imageConvertIsolateHandler(dynamic params) async {
     final image = params['image'] as CameraImage;
     final byte = await ImageConverter.convertYUV420ToRGBByte(image);
     return byte;
   }
+
+  static Future<dynamic> imageSequenceTransfortIsolateHandler(
+    dynamic params,
+  ) async {}
 }

@@ -33,25 +33,24 @@ enum EventType {
           orElse: () => EventType.undefined);
 }
 
-final eventProvider =
-    StateNotifierProvider<EventSettingList, List<EventSetting>>(
-        (ref) => EventSettingList());
+final eventProvider = StateNotifierProvider<UserSettingList, List<UserSetting>>(
+    (ref) => UserSettingList());
 
 @immutable
-class EventSetting {
+class UserSetting {
   final String alias;
   final String gesture;
   final List<EventType> keyMap;
 
-  const EventSetting(
+  const UserSetting(
       {this.alias = 'none', this.gesture = 'none', this.keyMap = const []});
 
-  EventSetting copyWith({
+  UserSetting copyWith({
     String? alias,
     String? gesture,
     List<EventType>? keyMap,
   }) =>
-      EventSetting(
+      UserSetting(
         alias: alias ?? this.alias,
         gesture: gesture ?? this.gesture,
         keyMap: keyMap ?? this.keyMap,
@@ -60,7 +59,7 @@ class EventSetting {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is EventSetting &&
+    return other is UserSetting &&
         other.alias == alias &&
         other.keyMap == keyMap;
   }
@@ -69,10 +68,10 @@ class EventSetting {
   int get hashCode => alias.hashCode ^ keyMap.hashCode;
 }
 
-class EventSettingList extends StateNotifier<List<EventSetting>> {
-  EventSettingList() : super([]);
+class UserSettingList extends StateNotifier<List<UserSetting>> {
+  UserSettingList() : super([]);
 
-  void add(EventSetting eventSetting) {
+  void add(UserSetting eventSetting) {
     state = [
       ...state,
       eventSetting,
@@ -82,15 +81,15 @@ class EventSettingList extends StateNotifier<List<EventSetting>> {
   void addEmpty() {
     state = [
       ...state,
-      EventSetting(alias: 'My Gesture ${state.length}'),
+      UserSetting(alias: 'My Gesture ${state.length}'),
     ];
   }
 
-  void remove(EventSetting eventSetting) {
+  void remove(UserSetting eventSetting) {
     state = state.where((e) => e != eventSetting).toList();
   }
 
-  void update(EventSetting oldEventSetting, EventSetting newEventSetting) {
+  void update(UserSetting oldEventSetting, UserSetting newEventSetting) {
     final index =
         state.indexWhere((event) => event.alias == oldEventSetting.alias);
     if (index != -1) {
