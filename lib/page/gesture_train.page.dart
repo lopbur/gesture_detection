@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:isolate';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:camera/camera.dart';
 import 'package:gesture_detection/page/widget/image_sequence.dart';
+import 'package:gesture_detection/provider/handler.provider.dart';
 import 'package:gesture_detection/util/converter.dart';
 
 import '../provider/client.provider.dart';
@@ -132,12 +132,23 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
                   ),
                   FloatingActionButton(
                     onPressed: () {
-                      ref.watch(trainSetProvider.notifier).removeAll();
+                      ref.watch(controlProvider.notifier).toggleCameraStream();
                       makeSequence();
                     },
                     child: Icon(control.isCameraStreamStarted
                         ? Icons.stop
                         : Icons.play_arrow),
+                  ),
+                  FloatingActionButton(
+                    onPressed: () {
+                      ref
+                          .watch(controlProvider.notifier)
+                          .setCameraStream(false);
+                      ref.watch(trainSetProvider.notifier).removeAll();
+                    },
+                    child: Icon(
+                      Icons.highlight_remove_sharp,
+                    ),
                   ),
                   FloatingActionButton(
                     onPressed: () {
@@ -158,7 +169,6 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
 
   //do capture camera stream to make train set sequences.
   void makeSequence() {
-    ref.watch(controlProvider.notifier).setCameraStream(true);
     Future.delayed(
       Duration(seconds: ref.watch(controlProvider).makeSequenceTime),
       () => ref.watch(controlProvider.notifier).setCameraStream(false),
@@ -166,16 +176,18 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
   }
 
   void cameraStreamHandler(CameraImage image) {
-    if (ref.watch(isolateFlagProvider)) return;
-    ref.watch(isolateFlagProvider.notifier).state = true;
+    final handler = ref.watch(handlerProvider)['isolate_convertImageToYUV'];
+    if (handler == null) return;
     Future.delayed(
       Duration(milliseconds: ref.watch(controlProvider).frameInterval),
       () {
         _isolateSpawn(
-          imageConvertIsolateHandler,
+          handler,
           {'image': image},
           (result) {
-            return ref.watch(trainSetProvider.notifier).add(result);
+            if (ref.watch(controlProvider).isCameraStreamStarted) {
+              return ref.watch(trainSetProvider.notifier).add(result);
+            }
           },
         );
         ref.watch(isolateFlagProvider.notifier).state = false;
@@ -184,32 +196,18 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
   }
 
   dynamic _isolateSpawn(
-      Future<dynamic> Function(dynamic) isolateHandler,
+      Future<dynamic> Function(Map<String, dynamic>) isolateHandler,
       Map<String, dynamic>? handlerParameter,
       void Function(dynamic) postCallback) async {
     final responsePort = ReceivePort();
-
-    Map params = {
-      ...handlerParameter ?? {},
-    };
 
     _isolateUtils.sendMessage(
       isolateHandler,
       _isolateUtils.sendPort,
       responsePort,
-      params: params,
+      params: handlerParameter ?? {},
     );
 
     postCallback(await responsePort.first);
   }
-
-  static Future<dynamic> imageConvertIsolateHandler(dynamic params) async {
-    final image = params['image'] as CameraImage;
-    final byte = await ImageConverter.convertYUV420ToRGBByte(image);
-    return byte;
-  }
-
-  static Future<dynamic> imageSequenceTransfortIsolateHandler(
-    dynamic params,
-  ) async {}
 }

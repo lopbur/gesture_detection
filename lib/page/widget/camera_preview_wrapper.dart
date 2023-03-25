@@ -70,7 +70,11 @@ class _CameraPreviewWrapperState extends ConsumerState<CameraPreviewWrapper> {
   void _startCameraStream() async {
     if (!mounted) return;
     if (_controller?.value.isStreamingImages ?? true) return;
-    _controller!.startImageStream(widget.streamHandler);
+    _controller!.startImageStream((image) {
+      if (ref.watch(isolateFlagProvider)) return;
+      ref.watch(isolateFlagProvider.notifier).state = true;
+      widget.streamHandler(image);
+    });
   }
 
   void _setCameraFront(bool c) async {
