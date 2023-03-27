@@ -87,9 +87,6 @@ class HandlerProvider extends StateNotifier<Map<String, Handler>> {
       offset += seq.length;
     }
 
-    dev.log(
-        'Each size: ${await getSize(seqs.first)}, entire size: ${await getSize(result)}');
-
     return result;
   }
 
