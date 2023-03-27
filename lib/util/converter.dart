@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:flutter/foundation.dart';
 import 'package:camera/camera.dart';
@@ -64,6 +65,8 @@ class ImageConverter {
     final int uvPixelStride = cameraImage.planes[1].bytesPerPixel!;
 
     final image = image_lib.Image(width: imageWidth, height: imageHeight);
+    final bytes = Uint8List(
+        imageWidth * imageHeight * 4); // Allocate memory for the image data
 
     try {
       for (int h = 0; h < imageHeight; h++) {
@@ -98,14 +101,25 @@ class ImageConverter {
           b = b.clamp(0, 255);
 
           image.setPixelRgba(w, h, r, g, b, shift);
+
+          // // Compute the offset of the current pixel
+          // final pixelOffset = (h * imageWidth + w) * 4;
+
+          // bytes[pixelOffset] = r; // Save the red channel value
+          // bytes[pixelOffset + 1] = g; // Save the green channel value
+          // bytes[pixelOffset + 2] = b; // Save the blue channel value
+          // bytes[pixelOffset + 3] = 0xFF; // Save the alpha channel value
         }
       }
 
-      image_lib.PngEncoder pngEncoder =
-          image_lib.PngEncoder(level: 0, filter: image_lib.PngFilter.none);
-      Uint8List bytes = pngEncoder.encode(image);
+      // image_lib.PngEncoder pngEncoder =
+      //     image_lib.PngEncoder(level: 0, filter: image_lib.PngFilter.none);
+      // Uint8List compressed = pngEncoder.encode(image);
 
-      return bytes;
+      image_lib.JpegEncoder jpegEncoder = image_lib.JpegEncoder(quality: 70);
+      Uint8List compressed = jpegEncoder.encode(image);
+
+      return compressed;
     } catch (e) {
       log('>>>>>> Error has occured while convert YUV420 to RGB: ${e.toString()}');
     }

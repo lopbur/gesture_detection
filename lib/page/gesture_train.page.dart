@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:isolate';
+import 'dart:typed_data';
 
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:camera/camera.dart';
 import 'package:gesture_detection/page/widget/image_sequence.dart';
 import 'package:gesture_detection/provider/handler.provider.dart';
-import 'package:gesture_detection/util/converter.dart';
 
 import '../provider/client.provider.dart';
 import '../provider/control.provider.dart';
@@ -118,9 +118,9 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
                             return Dialog(
                               child: Consumer(
                                 builder: (context, ref, child) {
-                                  return const Card(
-                                    child: ImageSequence(),
-                                  );
+                                  return train.planes.isEmpty
+                                      ? const Text('Train set is empty.')
+                                      : const ImageSequence();
                                 },
                               ),
                             );
@@ -146,15 +146,13 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
                           .setCameraStream(false);
                       ref.watch(trainSetProvider.notifier).removeAll();
                     },
-                    child: Icon(
+                    child: const Icon(
                       Icons.highlight_remove_sharp,
                     ),
                   ),
                   FloatingActionButton(
                     onPressed: () {
-                      ref
-                          .watch(controlProvider.notifier)
-                          .setMakeSequenceTime(3);
+                      sendImageSequenceHandler();
                     },
                     child: const Icon(Icons.send),
                   ),
@@ -176,8 +174,9 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
   }
 
   void cameraStreamHandler(CameraImage image) {
-    final handler = ref.watch(handlerProvider)['isolate_convertImageToYUV'];
+    final handler = ref.watch(handlerProvider)['isolate_cvCMRToRGB'];
     if (handler == null) return;
+
     Future.delayed(
       Duration(milliseconds: ref.watch(controlProvider).frameInterval),
       () {
@@ -186,11 +185,46 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
           {'image': image},
           (result) {
             if (ref.watch(controlProvider).isCameraStreamStarted) {
-              return ref.watch(trainSetProvider.notifier).add(result);
+              if (result != null) {
+                return ref.watch(trainSetProvider.notifier).add(result);
+              }
             }
           },
         );
         ref.watch(isolateFlagProvider.notifier).state = false;
+      },
+    );
+  }
+
+  void sendImageSequenceHandler() {
+    final handler = ref.watch(handlerProvider)['isolate_cvIMGSeqToByte'];
+    if (handler == null) return;
+
+    _isolateSpawn(
+      handler,
+      {'list': ref.watch(trainSetProvider).planes},
+      (result) {
+        const int chunkSize = 100 * 1024; // 100KB chunk size (adjust as needed)
+
+        int offset = 0;
+        Uint8List data = result;
+
+        while (offset < data.length) {
+          final int remaining = data.length - offset;
+          final int chunkLength = remaining > chunkSize ? chunkSize : remaining;
+          final Uint8List chunk = Uint8List.view(
+            data.buffer,
+            offset,
+            chunkLength,
+          );
+          offset += chunkLength;
+
+          final bool isLastChunk = (offset == data.length);
+          // send the chunk to the server
+          // socket.emit('imageChunk', chunk);
+          ref.watch(clientProvider.notifier).send(MessageType.registerGesture,
+              {'data': chunk, 'isLastChunk': isLastChunk});
+        }
       },
     );
   }

@@ -1,8 +1,11 @@
+import 'dart:developer' as dev;
 import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gesture_detection/provider/client.provider.dart';
 
+import '../util/common_util.dart';
 import '../util/converter.dart';
 
 typedef Handler = Future<dynamic> Function(Map<String, dynamic>);
@@ -11,16 +14,16 @@ typedef HandlerParam = Map<String, dynamic>;
 final handlerProvider =
     StateNotifierProvider<HandlerProvider, Map<String, Handler>>(
   (ref) {
-    return HandlerProvider({
-      'isolate_sendImageStream': HandlerProvider.sndimgstrmIsolate,
-      'isolate_sendImageSequences': HandlerProvider.sndimgsqnceIsolater,
-      'isolate_convertImageToYUV': HandlerProvider.cnvrtcmrimgyuvIsolate,
+    return HandlerProvider(init: {
+      'isolate_cvCMRToByte': HandlerProvider.cnvrtCMRToByte,
+      'isolate_cvCMRToRGB': HandlerProvider.cnvrtCMRToRGB,
+      'isolate_cvIMGSeqToByte': HandlerProvider.cnvrtIMGSeqToByte,
     });
   },
 );
 
 class HandlerProvider extends StateNotifier<Map<String, Handler>> {
-  HandlerProvider(Map<String, Handler>? init) : super({...init ?? {}});
+  HandlerProvider({this.init}) : super({...init ?? {}});
   Map<String, Handler>? init;
 
   void register(String description, Handler body) {
@@ -48,7 +51,10 @@ class HandlerProvider extends StateNotifier<Map<String, Handler>> {
   /// Return [Uint8List] (YUV420 format) converted from [CameraImage].
   ///
   /// params must be included ['image'] key of type [CameraImage].
-  static Future<dynamic> sndimgstrmIsolate(HandlerParam params) async {
+  static Future<dynamic> cnvrtCMRToByte(HandlerParam params) async {
+    if (!params.containsKey('image')) return;
+    if (!params['image'] is! CameraImage) return;
+
     final data = params['image'] as CameraImage;
     final result = Uint8List(
         data.planes.fold(0, (count, plane) => count + plane.bytes.length));
@@ -61,19 +67,40 @@ class HandlerProvider extends StateNotifier<Map<String, Handler>> {
     return result;
   }
 
+  /// Return [Uint8List] (YUV420 format) planes converted from List<Uint8List> image sequence.
+  ///
+  /// params must be included ['list'] key of type [List] contain [Uint8List].
+  static Future<dynamic> cnvrtIMGSeqToByte(HandlerParam params) async {
+    if (!params.containsKey('list')) return;
+    if (params['list'] is! List<Uint8List>) return;
+
+    final seqs = params['list'] as List<Uint8List>;
+    if (seqs.isEmpty) return;
+
+    final result = Uint8List(seqs.fold(0, (count, seq) => count + seq.length));
+    int offset = 0;
+    for (final seq in seqs) {
+      result.setRange(offset, offset + seq.length, seq);
+      offset += seq.length;
+    }
+
+    dev.log(
+        'Each size: ${await getSize(seqs.first)}, entire size: ${await getSize(result)}');
+
+    return result;
+  }
+
   /// Return [Uint8List] (YUV420 format -> RGB format) converted from [CameraImage].
   ///
   /// params must be included ['image'] key of type [CameraImage].
-  static Future<dynamic> cnvrtcmrimgyuvIsolate(HandlerParam params) async {
-    final image = params['image'] as CameraImage;
-    final byte = await ImageConverter.convertYUV420ToRGBByte(image);
-    return byte;
-  }
-
-  /// Return [Uint8List] (YUV420 format) planes converted from List<Uint8List> image sequence.
-  static Future<dynamic> sndimgsqnceIsolater(
-    dynamic params,
-  ) async {
-    return 0;
+  static Future<dynamic> cnvrtCMRToRGB(HandlerParam params) async {
+    try {
+      final image = params['image'] as CameraImage;
+      final byte = await ImageConverter.convertYUV420ToRGBByte(image);
+      return byte;
+    } catch (e) {
+      dev.log('Unexpected error has occured: ${e.toString()}');
+    }
+    return null;
   }
 }
