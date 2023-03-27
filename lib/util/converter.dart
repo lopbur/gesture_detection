@@ -116,7 +116,7 @@ class ImageConverter {
       //     image_lib.PngEncoder(level: 0, filter: image_lib.PngFilter.none);
       // Uint8List compressed = pngEncoder.encode(image);
 
-      image_lib.JpegEncoder jpegEncoder = image_lib.JpegEncoder(quality: 70);
+      image_lib.JpegEncoder jpegEncoder = image_lib.JpegEncoder(quality: 50);
       Uint8List compressed = jpegEncoder.encode(image);
 
       return compressed;

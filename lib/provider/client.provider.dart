@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -100,6 +101,28 @@ class ClientProvider extends StateNotifier<Client> {
     final encoded = json.encode(data);
     if (state.socket?.connected ?? false) {
       state.socket!.emit(type.value, encoded);
+    }
+  }
+
+  void sendByteChunk(MessageType type, Uint8List data, int? chunkSize) {
+    int cs = chunkSize ?? 100 * 1024; // 100KB chunk size (adjust as needed)
+
+    int offset = 0;
+
+    while (offset < data.length) {
+      final int remaining = data.length - offset;
+      final int chunkLength = remaining > cs ? cs : remaining;
+      final Uint8List chunk = Uint8List.view(
+        data.buffer,
+        offset,
+        chunkLength,
+      );
+      offset += chunkLength;
+
+      final bool isLastChunk = (offset == data.length);
+
+      // send the chunk to the server
+      send(type, {'data': chunk, 'isLastChunk': isLastChunk});
     }
   }
 

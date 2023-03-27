@@ -204,27 +204,10 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
       handler,
       {'list': ref.watch(trainSetProvider).planes},
       (result) {
-        const int chunkSize = 100 * 1024; // 100KB chunk size (adjust as needed)
-
-        int offset = 0;
-        Uint8List data = result;
-
-        while (offset < data.length) {
-          final int remaining = data.length - offset;
-          final int chunkLength = remaining > chunkSize ? chunkSize : remaining;
-          final Uint8List chunk = Uint8List.view(
-            data.buffer,
-            offset,
-            chunkLength,
-          );
-          offset += chunkLength;
-
-          final bool isLastChunk = (offset == data.length);
-          // send the chunk to the server
-          // socket.emit('imageChunk', chunk);
-          ref.watch(clientProvider.notifier).send(MessageType.registerGesture,
-              {'data': chunk, 'isLastChunk': isLastChunk});
-        }
+        // print(result);
+        ref
+            .watch(clientProvider.notifier)
+            .sendByteChunk(MessageType.registerGesture, result, null);
       },
     );
   }

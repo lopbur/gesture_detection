@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gesture_detection/provider/client.provider.dart';
 
 import '../util/common_util.dart';
 import '../util/converter.dart';
@@ -77,9 +76,13 @@ class HandlerProvider extends StateNotifier<Map<String, Handler>> {
     final seqs = params['list'] as List<Uint8List>;
     if (seqs.isEmpty) return;
 
-    final result = Uint8List(seqs.fold(0, (count, seq) => count + seq.length));
+    final result =
+        Uint8List((seqs.fold(0, (count, seq) => count + seq.length + 4 * 1)));
     int offset = 0;
     for (final seq in seqs) {
+      final seqLength = seq.length;
+      result.buffer.asByteData().setUint32(offset, seqLength, Endian.little);
+      offset += 4;
       result.setRange(offset, offset + seq.length, seq);
       offset += seq.length;
     }
