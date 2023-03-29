@@ -180,6 +180,9 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
     Future.delayed(
       Duration(milliseconds: ref.watch(controlProvider).frameInterval),
       () {
+        if (ref.watch(isolateFlagProvider)) return;
+        ref.watch(isolateFlagProvider.notifier).state = true;
+
         _isolateSpawn(
           handler,
           {'image': image},
@@ -191,6 +194,7 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
             }
           },
         );
+
         ref.watch(isolateFlagProvider.notifier).state = false;
       },
     );

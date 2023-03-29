@@ -104,6 +104,11 @@ class ClientProvider extends StateNotifier<Client> {
     }
   }
 
+  /// Send seperate byte as chunk to server.
+  ///
+  /// [data] is presente [Uint8List] byte value
+  /// pass [chunkSize] value to set seperated chunk size.
+  /// if pass null, set default chunkSize such as 100KB
   void sendByteChunk(MessageType type, Uint8List data, int? chunkSize) {
     int cs = chunkSize ?? 100 * 1024; // 100KB chunk size (adjust as needed)
 
