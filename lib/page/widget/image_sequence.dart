@@ -51,7 +51,7 @@ class _ImageSequenceState extends ConsumerState<ImageSequence> {
     ref.watch(previewImageIndexProvider.notifier).state = 0;
 
     previewImageTimer = Timer.periodic(
-      const Duration(milliseconds: 16),
+      const Duration(milliseconds: 20),
       (timer) {
         final rawPlanes = ref.watch(trainSetProvider).planes;
         final currentImageIndex = ref.watch(previewImageIndexProvider);

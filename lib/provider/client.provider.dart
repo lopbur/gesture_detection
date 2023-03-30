@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer' as dev;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -106,13 +107,14 @@ class ClientProvider extends StateNotifier<Client> {
 
   /// Send seperate byte as chunk to server.
   ///
-  /// [data] is presente [Uint8List] byte value
+  /// [data] is receives [Uint8List] bytes value
   /// pass [chunkSize] value to set seperated chunk size.
   /// if pass null, set default chunkSize such as 100KB
-  void sendByteChunk(MessageType type, Uint8List data, int? chunkSize) {
-    int cs = chunkSize ?? 100 * 1024; // 100KB chunk size (adjust as needed)
+  void sendByteChunk(MessageType type, Uint8List data, int? chunkSize) async {
+    int cs = chunkSize ?? 100 * 1024; // default 100KB chunk size
 
     int offset = 0;
+    dev.log('full data size: ${await getSize(data)}');
 
     while (offset < data.length) {
       final int remaining = data.length - offset;
@@ -122,6 +124,8 @@ class ClientProvider extends StateNotifier<Client> {
         offset,
         chunkLength,
       );
+      dev.log(
+          'full data length: ${data.length}, chunk size: $cs, range: $offset ~ ${offset + chunkLength}');
       offset += chunkLength;
 
       final bool isLastChunk = (offset == data.length);

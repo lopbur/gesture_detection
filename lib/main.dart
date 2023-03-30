@@ -25,7 +25,7 @@ class MyApp extends ConsumerWidget {
       theme: ThemeData(
         primarySwatch: Colors.blueGrey,
       ),
-      home: const CameraPage(),
+      home: const GestureTrainPage(),
     );
   }
 }

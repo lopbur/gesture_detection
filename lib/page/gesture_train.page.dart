@@ -133,7 +133,14 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
                   FloatingActionButton(
                     onPressed: () {
                       ref.watch(controlProvider.notifier).toggleCameraStream();
-                      makeSequence();
+                      Future.delayed(
+                        Duration(
+                            seconds:
+                                ref.watch(controlProvider).makeSequenceTime),
+                        () => ref
+                            .watch(controlProvider.notifier)
+                            .setCameraStream(false),
+                      );
                     },
                     child: Icon(control.isCameraStreamStarted
                         ? Icons.stop
