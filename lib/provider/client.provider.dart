@@ -1,13 +1,14 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as dev;
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:socket_io_client/socket_io_client.dart';
-
 import '../util/common_util.dart';
+
+part '../generated/provider/client.provider.freezed.dart';
 
 enum MessageType {
   handStream('hand_stream'),
@@ -22,80 +23,59 @@ enum MessageType {
 final clientProvider =
     StateNotifierProvider<ClientProvider, Client>((ref) => ClientProvider());
 
-@immutable
-class Client {
-  const Client({
-    this.socket,
-    this.socketOptions,
-    this.sourceDestination,
-    this.isInitialized = false,
-    this.isSocketUsed = false,
-  });
-
-  final Socket? socket;
-  final Map<String, dynamic>? socketOptions;
-  final String? sourceDestination;
-  final bool? isInitialized;
-  final bool? isSocketUsed;
-
-  Client copyWith({
-    Socket? socket,
-    Map<String, dynamic>? socketOptions,
-    String? sourceDestination,
-    bool? isInitialized,
-    bool? isSocketUsed,
-  }) =>
-      Client(
-        socket: socket ?? this.socket,
-        socketOptions: socketOptions ?? this.socketOptions,
-        sourceDestination: sourceDestination ?? this.sourceDestination,
-        isInitialized: isInitialized ?? this.isInitialized,
-        isSocketUsed: isSocketUsed ?? this.isSocketUsed,
-      );
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    if (other.runtimeType != runtimeType) return false;
-    return other is Client &&
-        other.socket == socket &&
-        mapEquals(other.socketOptions, socketOptions) &&
-        other.sourceDestination == sourceDestination &&
-        other.isInitialized == isInitialized &&
-        other.isSocketUsed == isSocketUsed;
-  }
-
-  @override
-  int get hashCode => Object.hash(
-      socket, socketOptions, sourceDestination, isInitialized, isSocketUsed);
-
-  @override
-  String toString() {
-    return '$runtimeType(socket: $socket, socketOptions: $socketOptions, '
-        'sourceDestination: $sourceDestination, isInitialized: $isInitialized)';
-  }
+@freezed
+class Client with _$Client {
+  factory Client({
+    required io.Socket? socket,
+    @Default('http://10.0.2.2:5000') String destination,
+    @Default(false) bool isInitialized,
+    @Default(false) bool isSocketUsed,
+  }) = _Client;
 }
 
 class ClientProvider extends StateNotifier<Client> {
-  ClientProvider() : super(const Client());
+  ClientProvider()
+      : super(
+          Client(
+            socket: io.io(
+              'http://10.0.2.2:5000',
+              io.OptionBuilder().setTransports(['websocket']).build(),
+            ),
+          ),
+        );
 
   void connect() {
-    final options = state.socketOptions ??
-        OptionBuilder().setTransports(['websocket']).build();
+    if (state.socket?.connected ?? false) return;
     state = state.copyWith(
-        socket: io(state.sourceDestination ?? 'http://10.0.2.2:5000', options));
-    state.socket!.onConnect((_) => _setIsInitialized(true));
-    state.socket!.onDisconnect((_) {
-      _setIsInitialized(false);
-      _reconnect();
-    });
+      socket: io.io(state.destination,
+          io.OptionBuilder().setTransports(['websocket']).build()),
+    );
   }
 
   void disconnect() {
     if (state.socket?.connected ?? false) {
       state.socket!.dispose();
     }
+
     state = state.copyWith(socket: null);
+  }
+
+  void setupMessage(String message, Function(dynamic) handler) {
+    if (state.socket?.connected ?? false) {
+      state.socket!.on(message, handler);
+    }
+  }
+
+  void setOptions(Map<String, dynamic> newOptions) {
+    state = state.copyWith(socket: io.io(''));
+  }
+
+  void setSourceDestination(String newSourceDestination) {
+    state = state.copyWith(destination: newSourceDestination);
+  }
+
+  void setIsInitialized(bool isInitialized) {
+    state = state.copyWith(isInitialized: isInitialized);
   }
 
   void send(MessageType type, dynamic data) {
@@ -110,22 +90,27 @@ class ClientProvider extends StateNotifier<Client> {
   /// [data] is receives [Uint8List] bytes value
   /// pass [chunkSize] value to set seperated chunk size.
   /// if pass null, set default chunkSize such as 100KB
-  void sendByteChunk(MessageType type, Uint8List data, int? chunkSize) async {
-    int cs = chunkSize ?? 100 * 1024; // default 100KB chunk size
+  void sendByteChunk(
+    MessageType type,
+    Uint8List data,
+    int chunkSize, [
+    Map<String, dynamic>? additionalData,
+  ]) async {
+    if (additionalData != null) {
+      send(type, additionalData);
+    }
 
     int offset = 0;
-    dev.log('full data size: ${await getSize(data)}');
 
     while (offset < data.length) {
       final int remaining = data.length - offset;
-      final int chunkLength = remaining > cs ? cs : remaining;
+      final int chunkLength = remaining > chunkSize ? chunkSize : remaining;
       final Uint8List chunk = Uint8List.view(
         data.buffer,
         offset,
         chunkLength,
       );
-      dev.log(
-          'full data length: ${data.length}, chunk size: $cs, range: $offset ~ ${offset + chunkLength}');
+      dev.log('Send data where range: $offset ~ ${offset + chunkLength}');
       offset += chunkLength;
 
       final bool isLastChunk = (offset == data.length);
@@ -133,36 +118,5 @@ class ClientProvider extends StateNotifier<Client> {
       // send the chunk to the server
       send(type, {'data': chunk, 'isLastChunk': isLastChunk});
     }
-  }
-
-  void setupMessage(String message, Function(dynamic) handler) {
-    if (state.socket?.connected ?? false) {
-      state.socket!.on(message, handler);
-    }
-  }
-
-  void setOptions(Map<String, dynamic> newOptions) {
-    state = state.copyWith(socketOptions: newOptions);
-  }
-
-  void setSourceDestination(String newSourceDestination) {
-    state = state.copyWith(sourceDestination: newSourceDestination);
-  }
-
-  void _setIsInitialized(bool isInitialized) {
-    state = state.copyWith(isInitialized: isInitialized);
-  }
-
-  void _reconnect() {
-    Timer(const Duration(seconds: 5), () {
-      if (!state.isInitialized! && !state.isSocketUsed!) {
-        connect();
-      }
-    });
-  }
-
-  void reconnect() {
-    disconnect();
-    _reconnect();
   }
 }

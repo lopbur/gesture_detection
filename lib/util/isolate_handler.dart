@@ -2,50 +2,13 @@ import 'dart:developer' as dev;
 import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../util/converter.dart';
 
 typedef Handler = Future<dynamic> Function(Map<String, dynamic>);
 typedef HandlerParam = Map<String, dynamic>;
 
-final handlerProvider =
-    StateNotifierProvider<HandlerProvider, Map<String, Handler>>(
-  (ref) {
-    return HandlerProvider(init: {
-      'isolate_cvCMRToByte': HandlerProvider.cnvrtCMRToByte,
-      'isolate_cvCMRToRGB': HandlerProvider.cnvrtCMRToRGB,
-      'isolate_cvIMGSeqToByte': HandlerProvider.cnvrtIMGSeqToByte,
-    });
-  },
-);
-
-class HandlerProvider extends StateNotifier<Map<String, Handler>> {
-  HandlerProvider({this.init}) : super({...init ?? {}});
-  Map<String, Handler>? init;
-
-  void register(String description, Handler body) {
-    state = {
-      ...state,
-      ...{description: body}
-    };
-  }
-
-  void remove(String description) {
-    final updatedState = Map<String, Handler>.from(state);
-    updatedState.remove(description);
-    state = updatedState;
-  }
-
-  /// Call the handler registered as a [description] in the [handlerProvider] with [parameter]
-  ///
-  /// ```
-  /// ref.watch(handlerProvider.notifier).call('isolate_sendImageStream', {'image': cameraImageStream});
-  /// ```
-  dynamic call(String description, HandlerParam parameter) {
-    return state[description]?.call(parameter);
-  }
-
+class IsolateHandler {
   /// Return [Uint8List] (YUV420 format) converted from [CameraImage].
   ///
   /// params must be included ['image'] key of type [CameraImage].

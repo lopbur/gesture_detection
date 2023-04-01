@@ -1,7 +1,6 @@
 import 'dart:isolate';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:camera/camera.dart';
 
@@ -27,7 +26,7 @@ class _CameraPageState extends ConsumerState<CameraPage> {
     super.initState();
     _isolateUtils.initIsolate();
 
-    Future.microtask(() => ref.watch(clientProvider.notifier).connect());
+    // Future.microtask(() => ref.watch(clientProvider.notifier).connect());
   }
 
   @override

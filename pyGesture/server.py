@@ -1,11 +1,10 @@
-from pprint import pprint
 from flask import Flask
 from flask_socketio import SocketIO
 
-import time, os, json, cv2
 import numpy as np
-
 import mediapipe as mp
+
+import time, os, json, cv2
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'm1y2S3e4C5r6E7t8'
@@ -21,14 +20,6 @@ hands = mp_hands.Hands(
     min_tracking_confidence = 0.5,
 )
 
-@socketio.on('disconnect')
-def disconnect():
-    print('disconnected')
-
-@socketio.on('connection')
-def connection(data):
-    socketio.emit('hello', 'world')
-
 @socketio.on('hand_stream')
 def hand_stream(msg):
     data = json.loads(msg)
@@ -37,7 +28,6 @@ def hand_stream(msg):
     yuv = np.frombuffer(data['byte'], dtype=np.uint8).reshape(data['height'] * 3 // 2, data['width'])
     bgr = cv2.cvtColor(yuv, cv2.COLOR_YUV2BGR_I420) # for cv2 output
     rgb = cv2.cvtColor(yuv, cv2.COLOR_YUV2RGB_I420) # for hand model input
-    
 
 @socketio.on('register_gesture')
 def register_gesture(msg):
@@ -46,9 +36,7 @@ def register_gesture(msg):
     chunk_data = data['data']
 
     seq_length = 30
-    created_time = int(time.time())
 
-    
     if not hasattr(register_gesture, 'received_data'):
         register_gesture.received_data = bytearray()
 
@@ -127,18 +115,13 @@ def register_gesture(msg):
         # reset the received_data attribute for future use
         delattr(register_gesture, 'received_data')
 
+@socketio.on('disconnect')
+def disconnect():
+    print('Disconnected.')
 
-@socketio.on('request_landmark')
-def request_landmark(msg):
-    data = json.loads(msg)
-    print(data)
-
-@socketio.on('request_gesture')
-def request_gesture(msg):
-    data = json.loads(msg)
-    print(msg['isLastChunk'])
+@socketio.on('connection')
+def connection():
+    print('Connected.')
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
-
-    
