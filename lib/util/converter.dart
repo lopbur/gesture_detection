@@ -6,8 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:camera/camera.dart';
 import 'package:image/image.dart' as image_lib;
 
-import 'package:socket_io_client/socket_io_client.dart' as io;
-
 class Uint8ListConverter implements JsonConverter<Uint8List, Object> {
   const Uint8ListConverter();
 
@@ -25,37 +23,6 @@ class Uint8ListConverter implements JsonConverter<Uint8List, Object> {
     return list.toList();
   }
 }
-
-// class SocketConverter
-//     implements JsonConverter<io.Socket, Map<String, dynamic>> {
-//   const SocketConverter();
-
-//   @override
-//   io.Socket fromJson(Map<String, dynamic> json) {
-//     final host = json['host'] as String;
-//     final port = json['port'] as int;
-//     final socket = io.io('http://$host:$port',
-//         io.OptionBuilder().setTransports(['websocket']).build());
-
-//     return socket;
-//   }
-
-//   @override
-//   Map<String, dynamic> toJson(io.Socket object) {
-//     // Get the host and port values from the Socket's URI.
-//     final address = object.io.uri.toString();
-//     final splitAddress = address.split(':');
-//     final host = splitAddress[1].substring(2);
-//     final port = int.parse(splitAddress[2]);
-
-//     // Return a JSON-compatible Map with the Socket's host and port values.
-//     return {
-//       'host': host,
-//       'port': port,
-//       // Add other Socket properties as needed.
-//     };
-//   }
-// }
 
 class ImageConverter {
   const ImageConverter();
@@ -98,8 +65,8 @@ class ImageConverter {
     final int uvPixelStride = cameraImage.planes[1].bytesPerPixel!;
 
     final image = image_lib.Image(width: imageWidth, height: imageHeight);
-    final bytes = Uint8List(
-        imageWidth * imageHeight * 4); // Allocate memory for the image data
+    // final bytes = Uint8List(
+    //     imageWidth * imageHeight * 4); // Allocate memory for the image data
 
     try {
       for (int h = 0; h < imageHeight; h++) {

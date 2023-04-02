@@ -6,8 +6,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'dart:typed_data';
 
-import '../util/common_util.dart';
-
 part '../generated/provider/client.provider.freezed.dart';
 
 enum MessageType {
@@ -96,8 +94,15 @@ class ClientProvider extends StateNotifier<Client> {
     int chunkSize, [
     Map<String, dynamic>? additionalData,
   ]) async {
+    final Map<String, dynamic> jsonData = {
+      'chunk': {
+        'data': [],
+        'isLastChunk': false,
+      }
+    };
+
     if (additionalData != null) {
-      send(type, additionalData);
+      jsonData.addAll({'meta': additionalData});
     }
 
     int offset = 0;
@@ -113,10 +118,15 @@ class ClientProvider extends StateNotifier<Client> {
       dev.log('Send data where range: $offset ~ ${offset + chunkLength}');
       offset += chunkLength;
 
-      final bool isLastChunk = (offset == data.length);
-
+      final bool isLastChunk = offset == data.length;
+      jsonData['chunk']['data'] = chunk;
+      jsonData['chunk']['isLastChunk'] = isLastChunk;
       // send the chunk to the server
-      send(type, {'data': chunk, 'isLastChunk': isLastChunk});
+      send(type, jsonData);
+
+      if (jsonData.containsKey('meta')) {
+        jsonData.remove('meta');
+      }
     }
   }
 }

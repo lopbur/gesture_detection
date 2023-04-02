@@ -3,8 +3,9 @@ from flask_socketio import SocketIO
 
 import numpy as np
 import mediapipe as mp
+import os, json, cv2
 
-import time, os, json, cv2
+from service import train, model, req_gesture
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'm1y2S3e4C5r6E7t8'
@@ -32,88 +33,56 @@ def hand_stream(msg):
 @socketio.on('register_gesture')
 def register_gesture(msg):
     data = json.loads(msg)
-    is_last_chunk = data['isLastChunk']
-    chunk_data = data['data']
+    is_last_chunk = data['chunk']['isLastChunk']
+    chunk_data = data['chunk']['data']
 
-    seq_length = 30
+    if 'meta' in data:
+        if not hasattr(register_gesture, 'received_meta'):
+            register_gesture.received_meta = data['meta']
 
-    if not hasattr(register_gesture, 'received_data'):
-        register_gesture.received_data = bytearray()
+    if not hasattr(register_gesture, 'received_chunk'):
+        register_gesture.received_chunk = bytearray()
 
-    register_gesture.received_data.extend(chunk_data)
+    register_gesture.received_chunk.extend(chunk_data)
 
     if is_last_chunk:
-        # All chunks have been received, reconstruct the original data
-        reconstructed_data = bytes(register_gesture.received_data)
+        label = register_gesture.received_meta['label']
+        label_num = -1
 
-        # Initialize variables
-        bytes_read = 0
+        with open(train.labelPath, 'r') as f:
+            lines = f.readlines()
+
+        for i, line in enumerate(lines):
+            if label in line:
+                label_num = i
+
+        if label_num == -1:
+            with open(train.labelPath, 'a') as f:
+                f.write(f'{label} {len(lines)}\n')
+                label_num = len(lines)
+
+        print(f'{label}: {label_num}')
         
-        data = []
-        # Loop over the reconstructed data to extract the images
-        while bytes_read < len(reconstructed_data):
-            # Extract the length of the next image
-            length_bytes = reconstructed_data[bytes_read:bytes_read+4]
-            length = int.from_bytes(length_bytes, byteorder='little')
-            bytes_read += 4
+        imgs = req_gesture.byteToCV2List(bytes(register_gesture.received_chunk))
+        data = model.getHandAngleWithCV2List(imgs, label_num)
 
-            # Extract the next image data
-            image_data = reconstructed_data[bytes_read:bytes_read+length]
-            bytes_read += length
-
-            # Decode the image using OpenCV
-            nparr = np.frombuffer(image_data, np.uint8)
-            img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-            result = hands.process(img)
-
-            if result.multi_hand_landmarks is not None:
-                for res in result.multi_hand_landmarks:
-                    joint = np.zeros((21, 4))
-                    for j, lm in enumerate(res.landmark):
-                        joint[j] = [lm.x, lm.y, lm.z, lm.visibility]
-                    
-                    v1 = joint[[0, 1, 2, 3, 0, 5, 6, 7, 0, 9, 10, 11, 0, 13, 14, 15, 0, 17, 18, 19], :3]
-                    v2 = joint[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], :3]
-                    v = v2 - v1
-
-                    v = v / np.linalg.norm(v, axis=1)[:, np.newaxis]
-
-                    angle = np.arccos(np.einsum('nt, nt->n',
-                        v[[0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17, 18], :],
-                        v[[1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15, 17, 18, 19], :]
-                    ))
-
-                    angle = np.degrees(angle)
-
-                    angle_label = np.array([angle], dtype=np.float32)
-                    angle_label = np.append(angle_label, 1)
-
-                    d = np.concatenate([joint.flatten(), angle_label])
-
-                    data.append(d)
-
-                    mp_drawing.draw_landmarks(img, res, mp_hands.HAND_CONNECTIONS)
-
-            # # Display the image using OpenCV
-            # cv2.imshow('Image', img)
-            # cv2.waitKey(20)  # display each image for 20 milliseconds. about 50 fps.
-        
-        cv2.destroyAllWindows()
-            
-        data = np.array(data)
-        # np.save(os.path.join('data', f'raw_{created_time}'), data)
-        np.save(os.path.join('data', 'raw'), data)
+        seq_length = 30
 
         full_seq_data = []
         for seq in range(len(data) - seq_length):
             full_seq_data.append(data[seq:seq + seq_length])
+        
+        # save train set as raw data
+        data = np.array(data)
+        np.save(os.path.join('data', f'raw_{label}'), data)
 
+        # save train set as sequence data
         full_seq_data = np.array(full_seq_data)
-        # np.save(os.path.join('data', f'seq_{created_time}'), full_seq_data)
-        np.save(os.path.join('data', 'seq'), full_seq_data)
+        np.save(os.path.join('data', f'seq_{label}'), full_seq_data)
 
         # reset the received_data attribute for future use
-        delattr(register_gesture, 'received_data')
+        delattr(register_gesture, 'received_chunk')
+        delattr(register_gesture, 'received_meta')
 
 @socketio.on('disconnect')
 def disconnect():
