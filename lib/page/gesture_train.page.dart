@@ -86,8 +86,28 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
                           itemBuilder: (BuildContext context, int index) {
                             return Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Image.memory(
-                                train.planes[index],
+                              child: Stack(
+                                children: [
+                                  Image.memory(
+                                    train.planes[index],
+                                  ),
+                                  Positioned(
+                                    top: 10,
+                                    right: 10,
+                                    child: InkWell(
+                                      onTap: () {
+                                        ref
+                                            .watch(trainSetProvider.notifier)
+                                            .removeWhere(index);
+                                      },
+                                      child: const Icon(
+                                        Icons.clear,
+                                        color: Colors.red,
+                                        size: 30,
+                                      ),
+                                    ),
+                                  )
+                                ],
                               ),
                             );
                           },

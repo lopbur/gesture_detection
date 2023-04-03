@@ -1,3 +1,4 @@
-come 0
+clenching 0
 away 1
-fist 2
+come 2
+twoFinger 3

@@ -5,9 +5,20 @@ from keras.models import load_model
 
 seq_length = 30
 
-actions = ['fir', 'sec', 'thir', 'fourth', 'fifth']
+labelPath = 'data/labels.txt'
+dataPath = 'data'
 
-model = load_model('models/transfer.h5')
+with open(labelPath, 'r') as f:
+    lines = f.readlines()
+    actions = [line.strip().split()[0] for line in lines]
+    labels = [line.strip().split()[1] for line in lines]
+    
+data = np.concatenate([
+    np.load(f'{dataPath}/seq_{action.strip()}.npy') for action in actions
+], axis=0)
+
+# model = load_model('models/base_model.h5')
+model = load_model('models/transfer_1.h5')
 
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
@@ -36,7 +47,6 @@ while cap.isOpened():
             joint = np.zeros((21, 4))
             for j, lm in enumerate(res.landmark):
                 joint[j] = [lm.x, lm.y, lm.z, lm.visibility]
-                print(joint[j])
 
             # Compute angles between joints
             v1 = joint[[0,1,2,3,0,5,6,7,0,9,10,11,0,13,14,15,0,17,18,19], :3] # Parent joint
@@ -66,37 +76,32 @@ while cap.isOpened():
 
             y_pred = model.predict(input_data).squeeze()
 
+            print(y_pred)
+
             i_pred = int(np.argmax(y_pred))
             conf = y_pred[i_pred]
 
-            if conf < 0.9:
-                continue
-
-            # action = actions[i_pred]
-            # action_seq.append(action)
-
-            # if len(action_seq) < 3:
+            # if conf < 0.9:
             #     continue
 
-            # this_action = '?'
-            # if action_seq[-1] == action_seq[-2] == action_seq[-3]:
-            #     this_action = action
+            action = actions[i_pred]
+            action_seq.append(action)
 
-            cv2.putText(img, f'{i_pred}',
+            if len(action_seq) < 3:
+                continue
+
+            this_action = '?'
+            if action_seq[-1] == action_seq[-2] == action_seq[-3]:
+                this_action = action
+
+
+            cv2.putText(img, f'{this_action.upper()}',
                         org=(int(res.landmark[0].x * img.shape[1]),
                              int(res.landmark[0].y * img.shape[0] + 20)),
                              fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                              fontScale=1,
                              color=(255, 255, 255),
                              thickness=2)
-
-            # cv2.putText(img, f'{this_action.upper()}',
-            #             org=(int(res.landmark[0].x * img.shape[1]),
-            #                  int(res.landmark[0].y * img.shape[0] + 20)),
-            #                  fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-            #                  fontScale=1,
-            #                  color=(255, 255, 255),
-            #                  thickness=2)
 
     # out.write(img0)
     # out2.write(img)

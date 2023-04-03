@@ -42,6 +42,13 @@ class TrainSetProvider extends StateNotifier<TrainSet> {
     state = state.copyWith(planes: []);
   }
 
+  void removeWhere(int index) {
+    if (index >= state.planes.length) return;
+    final newPlanes = List<Uint8List>.from(state.planes);
+    newPlanes.removeAt(index);
+    update(newPlanes);
+  }
+
   void setLabel(String newLabel) {
     state = state.copyWith(label: newLabel);
   }
