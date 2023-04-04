@@ -8,11 +8,12 @@ from keras.layers import LSTM, Dense
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 
 
-labelPath = 'data/labels.txt'
-dataPath = 'data'
+base_label_path = 'data/labels.txt'
+base_data_path = 'data/'
+new_data_path = 'new_data/'
 
 def getActionTuples():
-    with open(labelPath, 'r') as f:
+    with open(base_label_path, 'r') as f:
         lines = f.readlines()
         actions = [line.strip().split()[0] for line in lines]
         labels = [line.strip().split()[1] for line in lines]
@@ -23,7 +24,7 @@ def train():
     actions, labels = getActionTuples()
 
     data = np.concatenate([
-        np.load(f'{dataPath}/seq_{action.strip()}.npy') for action in actions
+        np.load(f'{base_data_path}seq_{action.strip()}.npy') for action in actions
     ], axis=0)
     actions = [label.strip() for label in labels]
 

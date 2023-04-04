@@ -5,20 +5,26 @@ from keras.models import load_model
 
 seq_length = 30
 
-labelPath = 'data/labels.txt'
-dataPath = 'data'
+base_label_path = 'data/labels.txt'
 
-with open(labelPath, 'r') as f:
+new_label_path = 'new_data/labels.txt'
+
+with open(base_label_path, 'r') as f:
     lines = f.readlines()
-    actions = [line.strip().split()[0] for line in lines]
-    labels = [line.strip().split()[1] for line in lines]
-    
-data = np.concatenate([
-    np.load(f'{dataPath}/seq_{action.strip()}.npy') for action in actions
-], axis=0)
+    base_actions = [line.strip().split()[0] for line in lines]
+
+with open(new_label_path, 'r') as f:
+    lines = f.readlines()
+    new_actions = [line.strip().split()[0] for line in lines]
+
+actions = np.concatenate([base_actions, new_actions])
+
+print(actions)
+
+load_model_path = 'models/base_model.h5'
 
 # model = load_model('models/base_model.h5')
-model = load_model('models/transfer_1.h5')
+model = load_model(load_model_path)
 
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
@@ -81,8 +87,8 @@ while cap.isOpened():
             i_pred = int(np.argmax(y_pred))
             conf = y_pred[i_pred]
 
-            # if conf < 0.9:
-            #     continue
+            if conf < 0.9:
+                continue
 
             action = actions[i_pred]
             action_seq.append(action)

@@ -30,6 +30,16 @@ def hand_stream(msg):
     bgr = cv2.cvtColor(yuv, cv2.COLOR_YUV2BGR_I420) # for cv2 output
     rgb = cv2.cvtColor(yuv, cv2.COLOR_YUV2RGB_I420) # for hand model input
 
+    result = model.hands.process(rgb)
+
+    if result.multi_hand_landmarks is not None:
+        for res in result.multi_hand_landmarks:
+            model.mp_drawing.draw_landmarks(bgr, res, mp_hands.HAND_CONNECTIONS)
+
+    cv2.imshow('img', bgr)
+    cv2.waitKey(1)
+
+
 @socketio.on('register_gesture')
 def register_gesture(msg):
     data = json.loads(msg)
@@ -49,7 +59,7 @@ def register_gesture(msg):
         label = register_gesture.received_meta['label']
         label_num = -1
 
-        with open(train.labelPath, 'r') as f:
+        with open(train.base_label_path, 'r') as f:
             lines = f.readlines()
 
         for i, line in enumerate(lines):
@@ -57,11 +67,9 @@ def register_gesture(msg):
                 label_num = i
 
         if label_num == -1:
-            with open(train.labelPath, 'a') as f:
+            with open(train.base_label_path, 'a') as f:
                 f.write(f'{label} {len(lines)}\n')
                 label_num = len(lines)
-
-        print(f'{label}: {label_num}')
         
         imgs = req_gesture.byteToCV2List(bytes(register_gesture.received_chunk))
         data = model.getHandAngleWithCV2List(imgs, label_num)
@@ -83,6 +91,12 @@ def register_gesture(msg):
         # reset the received_data attribute for future use
         delattr(register_gesture, 'received_chunk')
         delattr(register_gesture, 'received_meta')
+
+        for img in imgs:
+            cv2.imshow('gesture', img)
+            cv2.waitKey(20)
+            
+        cv2.destroyAllWindows()
 
 @socketio.on('disconnect')
 def disconnect():
