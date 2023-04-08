@@ -1,16 +1,15 @@
 from keras.models import load_model
 
 import numpy as np
-import service.train as ts
-import service.data as ds
+import service.train as train_service
 
 import cv2
 
 seq_length = 30
 
-load_model_path = f'{ds.model_path}/base_model1.h5'
+load_model_path = f'{train_service.model_path}/base_model1.h5'
 
-with open(f'{ds.old_data_path}/labels.txt', 'r') as f:
+with open(f'{train_service.old_data_path}/labels.txt', 'r') as f:
     lines = f.readlines()
     base_actions = [line.strip().split()[0] for line in lines]
 
@@ -30,18 +29,17 @@ while cap.isOpened():
 
     img = cv2.flip(img, 1)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    result = ts.hands.process(img)
+    result = train_service.hands.process(img)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
     if result.multi_hand_landmarks is not None:
         for res in result.multi_hand_landmarks:
-            joint = np.zeros((21, 3))
-            for j, lm in enumerate(res.landmark):
-                joint[j] = [lm.x, lm.y, lm.z]
+            joint = train_service.get_joint_from_landmarks(res)
+            angle = train_service.get_angle_from_joint(joint)
             
-            seq.append(ts.getAngle(joint))
+            seq.append(angle)
                 
-            ts.mp_drawing.draw_landmarks(img, res, ts.mp_hands.HAND_CONNECTIONS)
+            train_service.mp_drawing.draw_landmarks(img, res, train_service.mp_hands.HAND_CONNECTIONS)
 
             if len(seq) < seq_length:
                 continue

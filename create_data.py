@@ -1,20 +1,19 @@
 import numpy as np
-import service.tdata as ts
-import service.cdata as ds
+import service.train as train_service
 
 import time, os, cv2, sys
 
 cap = cv2.VideoCapture(0)
 
-args = ds.parse_arguments()
+args = train_service.parse_arguments()
 
 # initialize with arguments
-cur_path = ds.new_data_path if args.n else ds.old_data_path
+cur_path = train_service.new_data_path if args.n else train_service.old_data_path
 save_path = os.path.abspath(cur_path)
 action_time = args.c
 
 # initialize folder
-ds.init(os.path.abspath('.'))
+train_service.init(os.path.abspath('.'))
     
 while cap.isOpened():
     label = input('enter the label of action: ')
@@ -42,19 +41,18 @@ while cap.isOpened():
         img = cv2.flip(img, 1)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        result = ts.hands.process(img)
+        result = train_service.hands.process(img)
 
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
         if result.multi_hand_landmarks is not None:
             for res in result.multi_hand_landmarks:
-                joint = np.zeros((21, 3))
-                for j, lm in enumerate(res.landmark):
-                    joint[j] = [lm.x, lm.y, lm.z]
+                joint = train_service.get_joint_from_landmarks(res)
+                angle = train_service.get_angle_from_joint(joint)
 
-                data.append(ts.getAngle(joint))
+                data.append(angle)
 
-                ts.mp_drawing.draw_landmarks(img, res, ts.mp_hands.HAND_CONNECTIONS)
+                train_service.mp_drawing.draw_landmarks(img, res, train_service.mp_hands.HAND_CONNECTIONS)
         
         cv2.imshow('img', img)
         if cv2.waitKey(1) == ord('q'):
@@ -62,13 +60,13 @@ while cap.isOpened():
             break
 
     # save label
-    isNotExist, label_num = ds.get_label_num(label, os.path.abspath('.'))
+    isNotExist, label_num = train_service.get_label_num(label, os.path.abspath('.'))
     if isNotExist:
         with open(os.path.join(cur_path, 'labels.txt'), 'a') as f:
             f.write(f'{label} {label_num}\n')
 
     # save data
-    ds.save_gesture(
+    train_service.save_gesture(
         data,
         save_path,
         label,

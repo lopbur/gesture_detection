@@ -5,7 +5,8 @@ import numpy as np
 import mediapipe as mp
 import os, json, cv2
 
-from service import train, model, req_gesture
+import service.train as train_service
+import service.parser as server_parser
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'm1y2S3e4C5r6E7t8'
@@ -29,11 +30,12 @@ def hand_stream(msg):
     bgr = cv2.cvtColor(yuv, cv2.COLOR_YUV2BGR_I420) # for cv2 output
     rgb = cv2.cvtColor(yuv, cv2.COLOR_YUV2RGB_I420) # for hand model input
 
-    result = model.hands.process(rgb)
+    result = train_service.hands.process(rgb)
 
     if result.multi_hand_landmarks is not None:
         for res in result.multi_hand_landmarks:
-            model.mp_drawing.draw_landmarks(bgr, res, mp_hands.HAND_CONNECTIONS)
+            train_service.get_angle()
+            train_service.mp_drawing.draw_landmarks(bgr, res, mp_hands.HAND_CONNECTIONS)
 
     cv2.imshow('img', bgr)
     cv2.waitKey(1)
@@ -58,7 +60,7 @@ def register_gesture(msg):
         label = register_gesture.received_meta['label']
         label_num = -1
 
-        with open(train.base_label_path, 'r') as f:
+        with open(train_service.base_label_path, 'r') as f:
             lines = f.readlines()
 
         for i, line in enumerate(lines):
@@ -66,12 +68,12 @@ def register_gesture(msg):
                 label_num = i
 
         if label_num == -1:
-            with open(train.base_label_path, 'a') as f:
+            with open(train_service.base_label_path, 'a') as f:
                 f.write(f'{label} {len(lines)}\n')
                 label_num = len(lines)
         
-        imgs = req_gesture.byteToCV2List(bytes(register_gesture.received_chunk))
-        data = model.getHandAngleWithCV2List(imgs, label_num)
+        imgs = server_parser.byteToCV2List(bytes(register_gesture.received_chunk))
+        data = train_service.model.getHandAngleWithCV2List(imgs, label_num)
 
         seq_length = 30
 
