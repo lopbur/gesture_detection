@@ -3,10 +3,10 @@ import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:camera/camera.dart';
+import 'package:gesture_detection/util/isolate_handler.dart';
 
 import '../provider/client.provider.dart';
 import '../provider/control.provider.dart';
-import '../provider/handler.provider.dart';
 import '../util/isolate_util.dart';
 
 import 'widget/camera_preview_wrapper.dart';
@@ -25,8 +25,6 @@ class _CameraPageState extends ConsumerState<CameraPage> {
   void initState() {
     super.initState();
     _isolateUtils.initIsolate();
-
-    // Future.microtask(() => ref.watch(clientProvider.notifier).connect());
   }
 
   @override
@@ -75,17 +73,12 @@ class _CameraPageState extends ConsumerState<CameraPage> {
   }
 
   void cameraStreamHandler(CameraImage image) {
-    final handler = ref.watch(handlerProvider)['isolate_cvCMRToByte'];
-    if (handler == null) return;
-
+    const handler = IsolateHandler.cnvrtCMRToByte;
     if (ref.watch(isolateFlagProvider)) return;
     ref.watch(isolateFlagProvider.notifier).state = true;
     Future.delayed(
       Duration(milliseconds: ref.watch(controlProvider).frameInterval),
       () {
-        if (ref.watch(isolateFlagProvider)) return;
-        ref.watch(isolateFlagProvider.notifier).state = true;
-
         _isolateSpawn(
           handler,
           {'image': image},
@@ -95,15 +88,15 @@ class _CameraPageState extends ConsumerState<CameraPage> {
               'height': image.height,
               'width': image.width,
             };
-
             ref
                 .watch(clientProvider.notifier)
                 .send(MessageType.handStream, data);
           },
         );
-        ref.watch(isolateFlagProvider.notifier).state = false;
       },
-    );
+    ).then((value) {
+      ref.watch(isolateFlagProvider.notifier).state = false;
+    });
   }
 
   dynamic _isolateSpawn(
@@ -121,17 +114,4 @@ class _CameraPageState extends ConsumerState<CameraPage> {
 
     postCallback(await responsePort.first);
   }
-
-  // static Future<dynamic> isolateHandler(dynamic params) async {
-  //   final data = params['image'] as CameraImage;
-  //   final result = Uint8List(
-  //       data.planes.fold(0, (count, plane) => count + plane.bytes.length));
-  //   int offset = 0;
-  //   for (final plane in data.planes) {
-  //     result.setRange(offset, offset + plane.bytes.length, plane.bytes);
-  //     offset += plane.bytes.length;
-  //   }
-
-  //   return result;
-  // }
 }

@@ -1,3 +1,0 @@
-clenching 0
-away 1
-come 2

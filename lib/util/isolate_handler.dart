@@ -9,12 +9,12 @@ typedef Handler = Future<dynamic> Function(Map<String, dynamic>);
 typedef HandlerParam = Map<String, dynamic>;
 
 class IsolateHandler {
-  /// Return [Uint8List] (YUV420 format) converted from [CameraImage].
+  /// Return [bytes] (YUV420 format) converted from [CameraImage].
   ///
   /// params must be included ['image'] key of type [CameraImage].
   static Future<dynamic> cnvrtCMRToByte(HandlerParam params) async {
     if (!params.containsKey('image')) return;
-    if (!params['image'] is! CameraImage) return;
+    if (params['image'] is! CameraImage) return;
 
     final data = params['image'] as CameraImage;
     final result = Uint8List(
@@ -25,7 +25,7 @@ class IsolateHandler {
       offset += plane.bytes.length;
     }
 
-    return result;
+    return result.toList();
   }
 
   /// Return [Uint8List] (YUV420 format) planes converted from List<Uint8List> image sequence.

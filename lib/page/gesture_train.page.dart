@@ -29,8 +29,6 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
   void initState() {
     super.initState();
     _isolateUtils.initIsolate();
-
-    // Future.microtask(() => ref.watch(clientProvider.notifier).connect());
   }
 
   @override
@@ -250,8 +248,6 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
   }
 
   void cameraStreamHandler(CameraImage image) {
-    // final handler = ref.watch(handlerProvider)['isolate_cvCMRToRGB'];
-    // if (handler == null) return;
     const handler = IsolateHandler.cnvrtCMRToRGB;
 
     Future.delayed(

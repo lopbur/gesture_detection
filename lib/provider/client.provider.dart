@@ -40,14 +40,26 @@ class ClientProvider extends StateNotifier<Client> {
               io.OptionBuilder().setTransports(['websocket']).build(),
             ),
           ),
-        );
+        ) {
+    handleDisconnect();
+  }
 
   void connect() {
+    print('try connect..');
     if (state.socket?.connected ?? false) return;
     state = state.copyWith(
       socket: io.io(state.destination,
           io.OptionBuilder().setTransports(['websocket']).build()),
     );
+  }
+
+  void handleDisconnect() {
+    // 소켓의 'disconnect' 이벤트 처리
+    state.socket?.on('disconnect', (_) {
+      // 재접속 로직 호출
+      print('try reconnect..');
+      connect();
+    });
   }
 
   void disconnect() {
