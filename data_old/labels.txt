@@ -1,0 +1,5 @@
+clenching 0
+foldIndex 1
+foldIndexMiddle 2
+away 3
+wolf 4
