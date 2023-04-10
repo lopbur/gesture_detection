@@ -3,17 +3,21 @@ from keras.models import load_model
 import numpy as np
 import service.train as train_service
 
-import cv2
+import cv2, os
 
 seq_length = 30
 
-load_model_path = f'{train_service.model_path}/base_model1.h5'
+# define base data, label store path
+old_data_path = os.path.abspath(train_service.OLD_DATA_PATH)
+new_data_path = os.path.abspath(train_service.NEW_DATA_PATH)
 
-with open(f'{train_service.old_data_path}/labels.txt', 'r') as f:
-    lines = f.readlines()
-    base_actions = [line.strip().split()[0] for line in lines]
+load_model_path = f'{train_service.MODEL_PATH}/base_model.h5'
+label_file_name = 'labels.txt'
 
-actions = np.concatenate([base_actions])
+old_actions, old_labels = train_service.load_gesture_label(os.path.join(old_data_path, label_file_name))
+new_actions, new_labels = train_service.load_gesture_label(os.path.join(new_data_path, label_file_name))
+
+actions = np.concatenate([old_actions, new_actions])
 print(f'Current trained actions: {actions}')
 
 model = load_model(load_model_path)
@@ -29,7 +33,7 @@ while cap.isOpened():
 
     img = cv2.flip(img, 1)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    result = train_service.hands.process(img)
+    result = train_service.HANDS_INST.process(img)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
     if result.multi_hand_landmarks is not None:
@@ -39,7 +43,7 @@ while cap.isOpened():
             
             seq.append(angle)
                 
-            train_service.mp_drawing.draw_landmarks(img, res, train_service.mp_hands.HAND_CONNECTIONS)
+            train_service.MP_DRAW.draw_landmarks(img, res, train_service.mp_hands.HAND_CONNECTIONS)
 
             if len(seq) < seq_length:
                 continue

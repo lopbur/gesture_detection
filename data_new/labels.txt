@@ -1,0 +1,1 @@
+touchMiddle 5
