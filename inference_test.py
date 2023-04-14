@@ -1,26 +1,35 @@
 from keras.models import load_model
 
 import numpy as np
-import service.train as train_service
+import service.globals as _g
+import service.data_io as _dio
+import service.parser as _psr
+import mediapipe as mp
 
 import cv2, os
 
 seq_length = 30
 
 # define base data, label store path
-old_data_path = os.path.abspath(train_service.OLD_DATA_PATH)
-new_data_path = os.path.abspath(train_service.NEW_DATA_PATH)
+old_data_path = os.path.abspath(_g.OLD_DATA_FOLDER_NAME)
+new_data_path = os.path.abspath(_g.NEW_DATA_FOLDER_NAME)
+old_label_path = os.path.join(old_data_path, _g.LABEL_NAME)
+new_label_path = os.path.join(new_data_path, _g.LABEL_NAME)
 
-load_model_path = f'{train_service.MODEL_PATH}/base_model.h5'
-label_file_name = 'labels.txt'
+load_model_path = f'{_g.MODEL_FOLDER_NAME}/base_model1.h5'
 
-old_actions, old_labels = train_service.load_gesture_label(os.path.join(old_data_path, label_file_name))
-new_actions, new_labels = train_service.load_gesture_label(os.path.join(new_data_path, label_file_name))
+actions, labels = _dio.load_gesture_label(old_label_path)
 
-actions = np.concatenate([old_actions, new_actions])
 print(f'Current trained actions: {actions}')
 
-model = load_model(load_model_path)
+mp_hands = mp.solutions.hands
+mp_draws = mp.solutions.drawing_utils
+landmark_model = mp_hands.Hands(
+    max_num_hands=1,
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5)
+GESTURE_MODEL_PATH = os.path.abspath(os.path.join(_g.MODEL_FOLDER_NAME, _g.GESTURE_MODEL_NAME))
+gesture_model = load_model(GESTURE_MODEL_PATH)
 
 cap = cv2.VideoCapture(0)
 
@@ -33,24 +42,24 @@ while cap.isOpened():
 
     img = cv2.flip(img, 1)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    result = train_service.HANDS_INST.process(img)
+    result = landmark_model.process(img)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
     if result.multi_hand_landmarks is not None:
         for res in result.multi_hand_landmarks:
-            joint = train_service.get_joint_from_landmarks(res)
-            angle = train_service.get_angle_from_joint(joint)
+            joint = _psr.get_joint_from_landmarks(res)
+            angle = _psr.get_angle_from_joint(joint)
             
             seq.append(angle)
                 
-            train_service.MP_DRAW.draw_landmarks(img, res, train_service.mp_hands.HAND_CONNECTIONS)
+            mp_draws.draw_landmarks(img, res, mp_hands.HAND_CONNECTIONS)
 
             if len(seq) < seq_length:
                 continue
 
             input_data = np.expand_dims(np.array(seq[-seq_length:], dtype=np.float32), axis=0)
 
-            y_pred = model.predict(input_data, verbose=None).squeeze()
+            y_pred = gesture_model.predict(input_data, verbose=None).squeeze()
 
             i_pred = int(np.argmax(y_pred))
             conf = y_pred[i_pred]

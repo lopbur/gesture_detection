@@ -1,20 +1,33 @@
 import numpy as np
-import service.train as train_service
-
+import mediapipe as mp
 import time, os, cv2, sys
+
+import service.globals as _g
+import service.data_io as _dio
+import service.parser as _psr
+
 
 cap = cv2.VideoCapture(0)
 
-args = train_service.parse_arguments()
+args = _psr.parse_arguments()
 
 # initialize with arguments
-cur_path = train_service.new_data_path if args.n else train_service.old_data_path
+cur_path = _g.NEW_DATA_FOLDER_NAME if args.n else _g.OLD_DATA_FOLDER_NAME
+old_data_path = os.path.abspath(_g.OLD_DATA_FOLDER_NAME)
+new_data_path = os.path.abspath(_g.NEW_DATA_FOLDER_NAME)
 save_path = os.path.abspath(cur_path)
 action_time = args.c
 
 # initialize folder
-train_service.init(os.path.abspath('.'))
-    
+_dio.create_data_init(old_data_path, new_data_path)
+
+mp_hands = mp.solutions.hands
+mp_draws = mp.solutions.drawing_utils
+landmark_model = mp_hands.Hands(
+    max_num_hands=1,
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5)
+
 while cap.isOpened():
     label = input('enter the label of action: ')
     if label == '':
@@ -41,18 +54,18 @@ while cap.isOpened():
         img = cv2.flip(img, 1)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        result = train_service.hands.process(img)
+        result = landmark_model.process(img)
 
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
         if result.multi_hand_landmarks is not None:
             for res in result.multi_hand_landmarks:
-                joint = train_service.get_joint_from_landmarks(res)
-                angle = train_service.get_angle_from_joint(joint)
+                joint = _psr.get_joint_from_landmarks(res)
+                angle = _psr.get_angle_from_joint(joint)
 
                 data.append(angle)
 
-                train_service.mp_drawing.draw_landmarks(img, res, train_service.mp_hands.HAND_CONNECTIONS)
+                mp_draws.draw_landmarks(img, res, mp_hands.HAND_CONNECTIONS)
         
         cv2.imshow('img', img)
         if cv2.waitKey(1) == ord('q'):
@@ -60,13 +73,13 @@ while cap.isOpened():
             break
 
     # save label
-    isNotExist, label_num = train_service.get_label_num(label, os.path.abspath('.'))
+    isNotExist, label_num = _dio.get_label_num(label, os.path.abspath('.'))
     if isNotExist:
         with open(os.path.join(cur_path, 'labels.txt'), 'a') as f:
             f.write(f'{label} {label_num}\n')
 
     # save data
-    train_service.save_gesture(
+    _dio.save_gesture(
         data,
         save_path,
         label,
