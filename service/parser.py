@@ -1,7 +1,7 @@
 from cv2 import cvtColor, imdecode, COLOR_YUV2BGR_I420, COLOR_YUV2RGB_I420, IMREAD_COLOR
 import argparse
 import numpy as np
-import service.globals as _g
+from service import _gl
 
 def parse_arguments():
     """
@@ -16,7 +16,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="create data set.")
     parser.add_argument('-n', action='store_true', help="store in newer data folder.")
     parser.add_argument('-r', action='store_true', help="replace with new data.")
-    parser.add_argument('-c', type=int, default=_g.ACTION_TIME, help='Time to collect data through camera')
+    parser.add_argument('-c', type=int, default=_gl.ACTION_TIME, help='Time to collect data through camera')
     args = parser.parse_args()
     
     return args
