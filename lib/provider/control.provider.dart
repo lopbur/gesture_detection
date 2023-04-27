@@ -1,51 +1,60 @@
-import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-@immutable
-class ControlDescription {
-  final int activeCamera;
-  final bool isCameraRotate;
+part '../generated/provider/control.provider.freezed.dart';
+part '../generated/provider/control.provider.g.dart';
 
-  const ControlDescription(
-      {this.activeCamera = 0, this.isCameraRotate = false});
+bool isIsolateBusy = false;
+final isolateFlagProvider = StateProvider<bool>(
+  (ref) => isIsolateBusy,
+);
 
-  ControlDescription copyWith({
-    int? activeCamera,
-    bool? isCameraRotate,
-  }) =>
-      ControlDescription(
-        activeCamera: activeCamera ?? this.activeCamera,
-        isCameraRotate: isCameraRotate ?? this.isCameraRotate,
-      );
+@freezed
+class Control with _$Control {
+  factory Control({
+    // global control about camera_preview_wrapper
+    @Default(100000) int frameInterval, // get image per frame
+    @Default(0) int rotateAngle, // camera preview angle, clockwise
+    @Default(false) bool isCameraFront, // camera position
+    @Default(false) bool isCameraStreamStarted, // camera stream flag
+    // gesture_train.page
+    @Default(5) int makeSequenceTime, // user start make train set flag
+  }) = _Control;
 
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+  factory Control.fromJson(Map<String, dynamic> json) =>
+      _$ControlFromJson(json);
+}
 
-    return other is ControlDescription &&
-        other.activeCamera == activeCamera &&
-        other.isCameraRotate == isCameraRotate;
+class ControlProvider extends StateNotifier<Control> {
+  ControlProvider() : super(Control());
+
+  void setFPS(int fps) {
+    state = state.copyWith(frameInterval: (1000 / fps).floor());
   }
 
-  @override
-  int get hashCode => activeCamera.hashCode ^ isCameraRotate.hashCode;
+  void rotateCamera() {
+    int angle = state.rotateAngle;
+    angle = (angle + 90) >= 360 ? 0 : angle + 90;
+    state = state.copyWith(rotateAngle: angle);
+  }
+
+  void toggleCameraFront() {
+    state = state.copyWith(isCameraFront: !state.isCameraFront);
+  }
+
+  void toggleCameraStream() {
+    state = state.copyWith(isCameraStreamStarted: !state.isCameraStreamStarted);
+  }
+
+  void setCameraStream(bool val) {
+    state = state.copyWith(isCameraStreamStarted: val);
+  }
+
+  void setMakeSequenceTime(int val) {
+    state = state.copyWith(makeSequenceTime: val);
+  }
 }
 
-class Control extends StateNotifier<ControlDescription> {
-  Control() : super(const ControlDescription());
-
-  static final provider = StateNotifierProvider<Control, ControlDescription>(
-    (ref) => Control(),
-  );
-
-  void setActiveCamera(int number) =>
-      state = state.copyWith(activeCamera: number);
-
-  void toggleCameraRotate() =>
-      state = state.copyWith(isCameraRotate: !state.isCameraRotate);
-}
-
-//it might be better which is define provider as static methods on its own class
-// final controlProvider = StateNotifierProvider<ControlNotifier, Control>(
-//   (ref) => ControlNotifier(),
-// );
+final controlProvider = StateNotifierProvider<ControlProvider, Control>(
+  (ref) => ControlProvider(),
+);

@@ -1,4 +1,4 @@
-name: gesture_detection_rebuild
+name: gesture_detection
 description: A new Flutter project.
 
 # The following line prevents the package from being accidentally published to
@@ -34,8 +34,12 @@ dependencies:
   flutter_riverpod: ^2.3.0
   camera: ^0.10.3+2
   image: ^4.0.15
-  web_socket_channel: ^2.3.0
   socket_io_client: ^2.0.1
+  freezed_annotation: ^2.2.0
+  json_annotation: ^4.8.0
+  navigator: ^1.1.1
+
+
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -44,6 +48,9 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  build_runner: ^2.3.3
+  freezed: ^2.3.2
+  json_serializable: ^6.6.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

@@ -1,6 +1,6 @@
 {
-    "name": "gesture_detection_rebuild",
-    "short_name": "gesture_detection_rebuild",
+    "name": "gesture_detection",
+    "short_name": "gesture_detection",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

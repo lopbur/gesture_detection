@@ -1,4 +1,4 @@
-# gesture_detection_rebuild
+# gesture_detection
 
 A new Flutter project.
 
