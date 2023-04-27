@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as dev;
 
@@ -24,7 +25,7 @@ final clientProvider =
 @freezed
 class Client with _$Client {
   factory Client({
-    required io.Socket? socket,
+    io.Socket? socket,
     @Default('http://10.0.2.2:5000') String destination,
     @Default(false) bool isInitialized,
     @Default(false) bool isSocketUsed,
@@ -34,46 +35,48 @@ class Client with _$Client {
 class ClientProvider extends StateNotifier<Client> {
   ClientProvider()
       : super(
-          Client(
-            socket: io.io(
-              'http://10.0.2.2:5000',
-              io.OptionBuilder().setTransports(['websocket']).build(),
-            ),
-          ),
+          Client(),
         ) {
-    handleDisconnect();
-  }
-
-  void connect() {
-    print('try connect..');
-    if (state.socket?.connected ?? false) return;
-    state = state.copyWith(
-      socket: io.io(state.destination,
-          io.OptionBuilder().setTransports(['websocket']).build()),
-    );
-  }
-
-  void handleDisconnect() {
-    // 소켓의 'disconnect' 이벤트 처리
-    state.socket?.on('disconnect', (_) {
-      // 재접속 로직 호출
-      print('try reconnect..');
-      connect();
-    });
-  }
-
-  void disconnect() {
-    if (state.socket?.connected ?? false) {
-      state.socket!.dispose();
-    }
-
-    state = state.copyWith(socket: null);
+    connect();
   }
 
   void setupMessage(String message, Function(dynamic) handler) {
     if (state.socket?.connected ?? false) {
       state.socket!.on(message, handler);
     }
+  }
+
+  void connect() async {
+    dev.log('try connect..');
+    if (state.isInitialized) {
+      dev.log('socket is already initialized.');
+    }
+    if (state.socket == null) {
+      state = state.copyWith(
+          socket: io.io(state.destination,
+              io.OptionBuilder().setTransports(['websocket']).build()));
+    } else {
+      state.socket!.connect();
+    }
+    state.socket!.onDisconnect(
+      (_) {
+        setIsInitialized(false);
+        dev.log('disconnected.');
+        reconnect();
+      },
+    );
+
+    state.socket!.onConnect(
+      (_) {
+        setIsInitialized(true);
+        dev.log('connected.');
+
+        dev.log('setup default listners.');
+        setupMessage('response_landmark', (msg) {
+          dev.log(msg);
+        });
+      },
+    );
   }
 
   void setOptions(Map<String, dynamic> newOptions) {
@@ -140,5 +143,28 @@ class ClientProvider extends StateNotifier<Client> {
         jsonData.remove('meta');
       }
     }
+  }
+
+  void reconnect() {
+    disconnect();
+    _reconnect();
+  }
+
+  void _reconnect() {
+    dev.log('try reconnect.');
+    Timer(const Duration(seconds: 4), () {
+      if (!state.isInitialized && !state.isSocketUsed) {
+        connect();
+      }
+    });
+  }
+
+  void disconnect() {
+    if (state.socket == null) {
+      dev.log('socket is alreay null. dispose not processed.');
+      return;
+    }
+    state.socket!.dispose();
+    dev.log('dispose complete.');
   }
 }

@@ -129,7 +129,7 @@ class __$$_ClientCopyWithImpl<$Res>
 
 class _$_Client implements _Client {
   _$_Client(
-      {required this.socket,
+      {this.socket,
       this.destination = 'http://10.0.2.2:5000',
       this.isInitialized = false,
       this.isSocketUsed = false});
@@ -178,7 +178,7 @@ class _$_Client implements _Client {
 
 abstract class _Client implements Client {
   factory _Client(
-      {required final io.Socket? socket,
+      {final io.Socket? socket,
       final String destination,
       final bool isInitialized,
       final bool isSocketUsed}) = _$_Client;

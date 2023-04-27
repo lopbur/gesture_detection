@@ -28,6 +28,27 @@ class IsolateHandler {
     return result.toList();
   }
 
+  static Future<dynamic> cnvrtCMRToGrayscaleByte(HandlerParam params) async {
+    if (!params.containsKey('image')) return;
+    if (params['image'] is! CameraImage) return;
+    final data = params['image'] as CameraImage;
+
+    // Convert YUV420 to grayscale image
+    final width = data.width;
+    final height = data.height;
+    final yPlane = data.planes[0].bytes;
+    final grayscale = Uint8List(width * height);
+    int grayOffset = 0;
+    for (int i = 0; i < height; i++) {
+      int rowOffset = i * data.planes[0].bytesPerRow;
+      for (int j = 0; j < width; j++) {
+        grayscale[grayOffset++] = yPlane[rowOffset + j];
+      }
+    }
+
+    return grayscale.toList();
+  }
+
   /// Return [Uint8List] (YUV420 format) planes converted from List<Uint8List> image sequence.
   ///
   /// params must be included ['list'] key of type [List] contain [Uint8List].

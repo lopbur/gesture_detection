@@ -38,46 +38,51 @@ class _CameraPageState extends ConsumerState<CameraPage> {
     final control = ref.watch(controlProvider);
 
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Gesture Detection'),
-          actions: [
-            IconButton(
-              onPressed: () =>
-                  ref.watch(controlProvider.notifier).toggleCameraFront(),
-              icon: const Icon(Icons.flip),
-            ),
-            IconButton(
-              onPressed: () =>
-                  ref.watch(controlProvider.notifier).rotateCamera(),
-              icon: const Icon(Icons.rotate_right),
-            ),
-            IconButton(
-              onPressed: () {
-                ref.watch(controlProvider.notifier).toggleCameraStream();
-              },
-              icon: Icon(control.isCameraStreamStarted
-                  ? Icons.stop
-                  : Icons.play_arrow),
-            )
-          ],
-        ),
-        body: Column(
-          children: [
-            Expanded(
-              flex: 1,
-              child: CameraPreviewWrapper(streamHandler: cameraStreamHandler),
-            ),
-            Expanded(flex: 1, child: Container())
-          ],
-        ));
+      appBar: AppBar(
+        title: const Text('Gesture Detection'),
+        actions: [
+          IconButton(
+            onPressed: () =>
+                ref.watch(controlProvider.notifier).toggleCameraFront(),
+            icon: const Icon(Icons.flip),
+          ),
+          IconButton(
+            onPressed: () => ref.watch(controlProvider.notifier).rotateCamera(),
+            icon: const Icon(Icons.rotate_right),
+          ),
+          IconButton(
+            onPressed: () {
+              ref.watch(controlProvider.notifier).toggleCameraStream();
+            },
+            icon: Icon(
+                control.isCameraStreamStarted ? Icons.stop : Icons.play_arrow),
+          ),
+          IconButton(
+            onPressed: () {
+              ref.watch(clientProvider.notifier).reconnect();
+            },
+            icon: const Icon(Icons.refresh),
+          )
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            flex: 1,
+            child: CameraPreviewWrapper(streamHandler: cameraStreamHandler),
+          ),
+          Expanded(flex: 1, child: Container())
+        ],
+      ),
+    );
   }
 
   void cameraStreamHandler(CameraImage image) {
-    const handler = IsolateHandler.cnvrtCMRToByte;
+    const handler = IsolateHandler.cnvrtCMRToGrayscaleByte;
     if (ref.watch(isolateFlagProvider)) return;
     ref.watch(isolateFlagProvider.notifier).state = true;
     Future.delayed(
-      Duration(milliseconds: ref.watch(controlProvider).frameInterval),
+      Duration(milliseconds: 30),
       () {
         _isolateSpawn(
           handler,
