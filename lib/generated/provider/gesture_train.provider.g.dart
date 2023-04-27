@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of '../../provider/train.provider.dart';
+part of '../../provider/gesture_train.provider.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator

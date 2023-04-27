@@ -7,7 +7,7 @@ part of '../../provider/control.provider.dart';
 // **************************************************************************
 
 _$_Control _$$_ControlFromJson(Map<String, dynamic> json) => _$_Control(
-      frameInterval: json['frameInterval'] as int? ?? 16,
+      frameInterval: json['frameInterval'] as int? ?? 100000,
       rotateAngle: json['rotateAngle'] as int? ?? 0,
       isCameraFront: json['isCameraFront'] as bool? ?? false,
       isCameraStreamStarted: json['isCameraStreamStarted'] as bool? ?? false,

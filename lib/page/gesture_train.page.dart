@@ -1,19 +1,18 @@
 import 'dart:async';
 import 'dart:isolate';
 
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:camera/camera.dart';
-import 'package:gesture_detection/page/widget/image_sequence.dart';
-import 'package:gesture_detection/provider/handler.provider.dart';
-import 'package:gesture_detection/util/converter.dart';
+import 'package:gesture_detection/util/isolate_handler.dart';
 
 import '../provider/client.provider.dart';
 import '../provider/control.provider.dart';
-import '../provider/train.provider.dart';
+import '../provider/gesture_train.provider.dart';
 import '../util/isolate_util.dart';
 
 import 'widget/camera_preview_wrapper.dart';
+import 'widget/image_sequence.dart';
 
 class GestureTrainPage extends ConsumerStatefulWidget {
   const GestureTrainPage({super.key});
@@ -30,8 +29,6 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
   void initState() {
     super.initState();
     _isolateUtils.initIsolate();
-
-    Future.microtask(() => ref.watch(clientProvider.notifier).connect());
   }
 
   @override
@@ -87,8 +84,28 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
                           itemBuilder: (BuildContext context, int index) {
                             return Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Image.memory(
-                                train.planes[index],
+                              child: Stack(
+                                children: [
+                                  Image.memory(
+                                    train.planes[index],
+                                  ),
+                                  Positioned(
+                                    top: 10,
+                                    right: 10,
+                                    child: InkWell(
+                                      onTap: () {
+                                        ref
+                                            .watch(trainSetProvider.notifier)
+                                            .removeWhere(index);
+                                      },
+                                      child: const Icon(
+                                        Icons.clear,
+                                        color: Colors.red,
+                                        size: 30,
+                                      ),
+                                    ),
+                                  )
+                                ],
                               ),
                             );
                           },
@@ -114,17 +131,15 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
                       if (!control.isCameraStreamStarted) {
                         showDialog(
                           context: context,
-                          builder: (context) {
-                            return Dialog(
-                              child: Consumer(
-                                builder: (context, ref, child) {
-                                  return const Card(
-                                    child: ImageSequence(),
-                                  );
-                                },
-                              ),
-                            );
-                          },
+                          builder: (context) => Dialog(
+                            child: Consumer(
+                              builder: (context, ref, child) {
+                                return train.planes.isEmpty
+                                    ? const Text('Train set is empty.')
+                                    : const ImageSequence();
+                              },
+                            ),
+                          ),
                         );
                       }
                     },
@@ -133,7 +148,14 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
                   FloatingActionButton(
                     onPressed: () {
                       ref.watch(controlProvider.notifier).toggleCameraStream();
-                      makeSequence();
+                      Future.delayed(
+                        Duration(
+                            seconds:
+                                ref.watch(controlProvider).makeSequenceTime),
+                        () => ref
+                            .watch(controlProvider.notifier)
+                            .setCameraStream(false),
+                      );
                     },
                     child: Icon(control.isCameraStreamStarted
                         ? Icons.stop
@@ -146,15 +168,59 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
                           .setCameraStream(false);
                       ref.watch(trainSetProvider.notifier).removeAll();
                     },
-                    child: Icon(
+                    child: const Icon(
                       Icons.highlight_remove_sharp,
                     ),
                   ),
                   FloatingActionButton(
                     onPressed: () {
-                      ref
-                          .watch(controlProvider.notifier)
-                          .setMakeSequenceTime(3);
+                      String message = 'Send training data successfully.';
+                      if (ref.watch(trainSetProvider).planes.isNotEmpty) {
+                        final TextEditingController textFieldController =
+                            TextEditingController();
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Write gesture label.'),
+                            content: TextField(
+                              onChanged: (value) {
+                                ref
+                                    .watch(trainSetProvider.notifier)
+                                    .setLabel(value);
+                              },
+                              controller: textFieldController,
+                              decoration: const InputDecoration(
+                                  hintText: "Text Field in Dialog"),
+                            ),
+                            actions: <Widget>[
+                              MaterialButton(
+                                color: Colors.red,
+                                textColor: Colors.white,
+                                child: const Text('CANCEL'),
+                                onPressed: () {
+                                  ref
+                                      .watch(trainSetProvider.notifier)
+                                      .setLabel('');
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              MaterialButton(
+                                color: Colors.green,
+                                textColor: Colors.white,
+                                child: const Text('OK'),
+                                onPressed: () {
+                                  sendImageSequenceHandler();
+                                  showSnackBar(context, message);
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      } else {
+                        message = 'Training data is empty!';
+                        showSnackBar(context, message);
+                      }
                     },
                     child: const Icon(Icons.send),
                   ),
@@ -167,6 +233,12 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
     );
   }
 
+  void showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+    ));
+  }
+
   //do capture camera stream to make train set sequences.
   void makeSequence() {
     Future.delayed(
@@ -176,21 +248,46 @@ class _GestureTrainPageState extends ConsumerState<GestureTrainPage> {
   }
 
   void cameraStreamHandler(CameraImage image) {
-    final handler = ref.watch(handlerProvider)['isolate_convertImageToYUV'];
-    if (handler == null) return;
+    const handler = IsolateHandler.cnvrtCMRToRGB;
+
     Future.delayed(
       Duration(milliseconds: ref.watch(controlProvider).frameInterval),
       () {
+        if (ref.watch(isolateFlagProvider)) return;
+        ref.watch(isolateFlagProvider.notifier).state = true;
+
         _isolateSpawn(
           handler,
           {'image': image},
           (result) {
             if (ref.watch(controlProvider).isCameraStreamStarted) {
-              return ref.watch(trainSetProvider.notifier).add(result);
+              if (result != null) {
+                return ref.watch(trainSetProvider.notifier).add(result);
+              }
             }
           },
         );
+
         ref.watch(isolateFlagProvider.notifier).state = false;
+      },
+    );
+  }
+
+  void sendImageSequenceHandler() {
+    // final handler = ref.watch(handlerProvider)['isolate_cvIMGSeqToByte'];
+    // if (handler == null) return;
+    const handler = IsolateHandler.cnvrtIMGSeqToByte;
+
+    _isolateSpawn(
+      handler,
+      {'list': ref.watch(trainSetProvider).planes},
+      (result) {
+        ref.watch(clientProvider.notifier).sendByteChunk(
+          MessageType.registerGesture,
+          result,
+          100 * 1024,
+          {'label': ref.watch(trainSetProvider).label},
+        );
       },
     );
   }

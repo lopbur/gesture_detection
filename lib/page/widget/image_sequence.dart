@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gesture_detection/provider/train.provider.dart';
+import 'package:gesture_detection/provider/gesture_train.provider.dart';
 
 class ImageSequence extends ConsumerStatefulWidget {
   const ImageSequence({super.key});
@@ -51,7 +51,7 @@ class _ImageSequenceState extends ConsumerState<ImageSequence> {
     ref.watch(previewImageIndexProvider.notifier).state = 0;
 
     previewImageTimer = Timer.periodic(
-      const Duration(milliseconds: 16),
+      const Duration(milliseconds: 20),
       (timer) {
         final rawPlanes = ref.watch(trainSetProvider).planes;
         final currentImageIndex = ref.watch(previewImageIndexProvider);

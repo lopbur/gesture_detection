@@ -5,8 +5,8 @@ import 'package:flutter/foundation.dart';
 //use Uint8ListConverter
 import '../util/converter.dart';
 
-part '../generated/provider/train.provider.freezed.dart';
-part '../generated/provider/train.provider.g.dart';
+part '../generated/provider/gesture_train.provider.freezed.dart';
+part '../generated/provider/gesture_train.provider.g.dart';
 
 int previewImageIndex = 0;
 final previewImageIndexProvider = StateProvider<int>(
@@ -40,6 +40,13 @@ class TrainSetProvider extends StateNotifier<TrainSet> {
 
   void removeAll() {
     state = state.copyWith(planes: []);
+  }
+
+  void removeWhere(int index) {
+    if (index >= state.planes.length) return;
+    final newPlanes = List<Uint8List>.from(state.planes);
+    newPlanes.removeAt(index);
+    update(newPlanes);
   }
 
   void setLabel(String newLabel) {
