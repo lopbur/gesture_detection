@@ -3,7 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
+<<<<<<< HEAD
 	objectVersion = 54;
+=======
+	objectVersion = 50;
+>>>>>>> cameraPage
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,6 +17,7 @@
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+<<<<<<< HEAD
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -26,6 +31,10 @@
 		};
 /* End PBXContainerItemProxy section */
 
+=======
+/* End PBXBuildFile section */
+
+>>>>>>> cameraPage
 /* Begin PBXCopyFilesBuildPhase section */
 		9705A1C41CF9048500538489 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -53,8 +62,11 @@
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+<<<<<<< HEAD
 		331C807B294A618700263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
 		331C8081294A63A400263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+=======
+>>>>>>> cameraPage
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +91,7 @@
 			name = Flutter;
 			sourceTree = "<group>";
 		};
+<<<<<<< HEAD
 		331C8082294A63A400263BE5 /* RunnerTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -87,13 +100,18 @@
 			path = RunnerTests;
 			sourceTree = "<group>";
 		};
+=======
+>>>>>>> cameraPage
 		97C146E51CF9000F007C117D = {
 			isa = PBXGroup;
 			children = (
 				9740EEB11CF90186004384FC /* Flutter */,
 				97C146F01CF9000F007C117D /* Runner */,
 				97C146EF1CF9000F007C117D /* Products */,
+<<<<<<< HEAD
 				331C8082294A63A400263BE5 /* RunnerTests */,
+=======
+>>>>>>> cameraPage
 			);
 			sourceTree = "<group>";
 		};
@@ -101,7 +119,10 @@
 			isa = PBXGroup;
 			children = (
 				97C146EE1CF9000F007C117D /* Runner.app */,
+<<<<<<< HEAD
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
+=======
+>>>>>>> cameraPage
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -124,6 +145,7 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+<<<<<<< HEAD
 		331C8080294A63A400263BE5 /* RunnerTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 331C8087294A63A400263BE5 /* Build configuration list for PBXNativeTarget "RunnerTests" */;
@@ -142,6 +164,8 @@
 			productReference = 331C8081294A63A400263BE5 /* RunnerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+=======
+>>>>>>> cameraPage
 		97C146ED1CF9000F007C117D /* Runner */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 97C147051CF9000F007C117D /* Build configuration list for PBXNativeTarget "Runner" */;
@@ -171,10 +195,13 @@
 				LastUpgradeCheck = 1300;
 				ORGANIZATIONNAME = "";
 				TargetAttributes = {
+<<<<<<< HEAD
 					331C8080294A63A400263BE5 = {
 						CreatedOnToolsVersion = 14.0;
 						TestTargetID = 97C146ED1CF9000F007C117D;
 					};
+=======
+>>>>>>> cameraPage
 					97C146ED1CF9000F007C117D = {
 						CreatedOnToolsVersion = 7.3.1;
 						LastSwiftMigration = 1100;
@@ -195,12 +222,16 @@
 			projectRoot = "";
 			targets = (
 				97C146ED1CF9000F007C117D /* Runner */,
+<<<<<<< HEAD
 				331C8080294A63A400263BE5 /* RunnerTests */,
+=======
+>>>>>>> cameraPage
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+<<<<<<< HEAD
 		331C807F294A63A400263BE5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -208,6 +239,8 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+=======
+>>>>>>> cameraPage
 		97C146EC1CF9000F007C117D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -224,12 +257,18 @@
 /* Begin PBXShellScriptBuildPhase section */
 		3B06AD1E1E4923F5004D2608 /* Thin Binary */ = {
 			isa = PBXShellScriptBuildPhase;
+<<<<<<< HEAD
 			alwaysOutOfDate = 1;
+=======
+>>>>>>> cameraPage
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
+<<<<<<< HEAD
 				"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}",
+=======
+>>>>>>> cameraPage
 			);
 			name = "Thin Binary";
 			outputPaths = (
@@ -240,7 +279,10 @@
 		};
 		9740EEB61CF901F6004384FC /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;
+<<<<<<< HEAD
 			alwaysOutOfDate = 1;
+=======
+>>>>>>> cameraPage
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -256,6 +298,7 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+<<<<<<< HEAD
 		331C807D294A63A400263BE5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -264,6 +307,8 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+=======
+>>>>>>> cameraPage
 		97C146EA1CF9000F007C117D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -275,6 +320,7 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+<<<<<<< HEAD
 /* Begin PBXTargetDependency section */
 		331C8086294A63A400263BE5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -283,6 +329,8 @@
 		};
 /* End PBXTargetDependency section */
 
+=======
+>>>>>>> cameraPage
 /* Begin PBXVariantGroup section */
 		97C146FA1CF9000F007C117D /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
@@ -374,6 +422,7 @@
 			};
 			name = Profile;
 		};
+<<<<<<< HEAD
 		331C8088294A63A400263BE5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AE0B7B92F70575B8D7E0D07E /* Pods-RunnerTests.debug.xcconfig */;
@@ -424,6 +473,8 @@
 			};
 			name = Profile;
 		};
+=======
+>>>>>>> cameraPage
 		97C147031CF9000F007C117D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -577,6 +628,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+<<<<<<< HEAD
 		331C8087294A63A400263BE5 /* Build configuration list for PBXNativeTarget "RunnerTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -587,6 +639,8 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+=======
+>>>>>>> cameraPage
 		97C146E91CF9000F007C117D /* Build configuration list for PBXProject "Runner" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

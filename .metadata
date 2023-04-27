@@ -4,8 +4,13 @@
 # This file should be version controlled.
 
 version:
+<<<<<<< HEAD
   revision: 8557ffa024f4f31f58d32dad585598982af9ed18
   channel: master
+=======
+  revision: 135454af32477f815a7525073027a3ff9eff1bfd
+  channel: stable
+>>>>>>> cameraPage
 
 project_type: app
 
@@ -13,6 +18,7 @@ project_type: app
 migration:
   platforms:
     - platform: root
+<<<<<<< HEAD
       create_revision: 8557ffa024f4f31f58d32dad585598982af9ed18
       base_revision: 8557ffa024f4f31f58d32dad585598982af9ed18
     - platform: android
@@ -33,6 +39,28 @@ migration:
     - platform: windows
       create_revision: 8557ffa024f4f31f58d32dad585598982af9ed18
       base_revision: 8557ffa024f4f31f58d32dad585598982af9ed18
+=======
+      create_revision: 135454af32477f815a7525073027a3ff9eff1bfd
+      base_revision: 135454af32477f815a7525073027a3ff9eff1bfd
+    - platform: android
+      create_revision: 135454af32477f815a7525073027a3ff9eff1bfd
+      base_revision: 135454af32477f815a7525073027a3ff9eff1bfd
+    - platform: ios
+      create_revision: 135454af32477f815a7525073027a3ff9eff1bfd
+      base_revision: 135454af32477f815a7525073027a3ff9eff1bfd
+    - platform: linux
+      create_revision: 135454af32477f815a7525073027a3ff9eff1bfd
+      base_revision: 135454af32477f815a7525073027a3ff9eff1bfd
+    - platform: macos
+      create_revision: 135454af32477f815a7525073027a3ff9eff1bfd
+      base_revision: 135454af32477f815a7525073027a3ff9eff1bfd
+    - platform: web
+      create_revision: 135454af32477f815a7525073027a3ff9eff1bfd
+      base_revision: 135454af32477f815a7525073027a3ff9eff1bfd
+    - platform: windows
+      create_revision: 135454af32477f815a7525073027a3ff9eff1bfd
+      base_revision: 135454af32477f815a7525073027a3ff9eff1bfd
+>>>>>>> cameraPage
 
   # User provided section
 

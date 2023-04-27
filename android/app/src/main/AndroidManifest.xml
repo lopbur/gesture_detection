@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.gesture_detection">
-    <application
+   <application
         android:label="gesture_detection"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

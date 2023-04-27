@@ -37,6 +37,7 @@
          </BuildableReference>
       </MacroExpansion>
       <Testables>
+<<<<<<< HEAD
          <TestableReference
             skipped = "NO"
             parallelizable = "YES">
@@ -48,6 +49,8 @@
                ReferencedContainer = "container:Runner.xcodeproj">
             </BuildableReference>
          </TestableReference>
+=======
+>>>>>>> cameraPage
       </Testables>
    </TestAction>
    <LaunchAction
