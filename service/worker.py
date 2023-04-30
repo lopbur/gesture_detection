@@ -1,6 +1,6 @@
 import numpy as np
 import pyautogui
-import os, asyncio
+import os
 
 from service import _mg, _gl
 
