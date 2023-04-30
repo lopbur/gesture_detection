@@ -1,6 +1,8 @@
 from cv2 import cvtColor, imdecode, COLOR_YUV2BGR_I420, COLOR_YUV2RGB_I420, IMREAD_COLOR
 import argparse
 import numpy as np
+import configparser
+
 from service import _gl
 
 def parse_arguments():
@@ -20,6 +22,31 @@ def parse_arguments():
     args = parser.parse_args()
     
     return args
+
+def parse_config(config_path):
+    """
+    parse config file to get default program setting
+
+    Args:
+        config_path (```String```): file path
+
+    Return:
+        dictionary stored config setting
+    """
+    config = configparser.ConfigParser()
+    config.read(config_path)
+    result = {}
+
+    section_list = config.sections()
+    if _gl.MOTION_BASE_LANDMARK_COORDINATE in section_list:
+        for key, value in config[_gl.MOTION_BASE_LANDMARK_COORDINATE]:
+            pass # need implement
+    
+    if _gl.CONTROL_SETTING in section_list:
+        for key, value in config[_gl.CONTROL_SETTING]:
+            pass # need implement
+    
+    return result
 
 def get_joint_from_landmarks(res):
     """

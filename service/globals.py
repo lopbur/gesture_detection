@@ -12,3 +12,8 @@ MODEL_FOLDER_NAME = 'models'
 OLD_DATA_FOLDER_NAME = 'data_old'
 NEW_DATA_FOLDER_NAME = 'data_new'
 LABEL_NAME = 'labels.txt'
+CONFIG_PATH = './settings/default.ini'
+
+# declaration of config sections
+MOTION_BASE_LANDMARK_COORDINATE = 'MOUSE_COORD'
+CONTROL_SETTING = 'CONTROL_SETTING'
