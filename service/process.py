@@ -14,13 +14,20 @@ class ProcessManager:
                               outputs=outputs)
         self.processes[alias] = new_process
 
-    def link(self, source, destination, link=None):
-        if source not in self.processes and destination not in self.processes:
-            return
-        if link is None:
-            self.processes[destination].inputs = self.processes[source].outputs
-        else:
-            self.processes[destination].inputs = self.processes[source].outputs = link
+    def link(self, source, destination, link=None, keep_exist=True):
+        linked = link if link is not None else mtp.Queue()
+        try:
+            if source not in self.processes and destination not in self.processes:
+                raise KeyError
+            if keep_exist:
+                self.processes[destination].inputs += (linked,)
+                self.processes[source].outputs += (linked,)
+            else:
+                self.processes[destination].inputs = self.processes[source].outputs = (linked,)
+        except KeyError:
+            raise KeyError(f'One of key is not founded in process lists while create link {source} -> {destination}')
+        except Exception as e:
+            print(e)
     
     def get_process_by_alias(self, alias):
         if alias in self.processes:
@@ -66,3 +73,4 @@ class Process:
         self.process = None
         self.input = None
         self.output = None
+
