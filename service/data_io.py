@@ -1,11 +1,47 @@
 import numpy as np
-import os
-import service.globals as _g
+import configparser, os
 
 ###########################################
 # INIT DATA STORE PATH, LOAD OR SAVE DATA #
 ###########################################
-def create_data_init(*folder_paths:str):
+
+# def load_config(config_path):
+#     """
+#     parse config file to get default program setting
+
+#     Args:
+#         config_path (```String```): file path
+
+#     Return:
+#         dictionary stored config setting
+#     """
+#     config = configparser.ConfigParser()
+#     config.read(config_path)
+#     result = {}
+
+#     section_list = config.sections()
+#     print(section_list)
+#     for section in _gl.CONFIG:
+#         if section in section_list:
+#             for conf in section:
+#                 raw = config.get(section, conf.name)
+#                 print(raw)
+#                 parsed = None
+#                 try:
+#                     if isinstance(conf.type, bool):
+#                         parsed = bool(raw)
+#                     elif isinstance(conf.type, int):
+#                         parsed = int(raw)
+#                     elif isinstance(conf.type, str):
+#                         parsed = str(raw)
+
+#                     result[config.name] = parsed
+#                 except ValueError:
+#                     raise ValueError(f'Invalid value')
+                    
+#     return result
+
+def create_data_init(label_file_name:str, *folder_paths:str):
     """
     Initialized for data stored
     If data store folder does not exist, create new folder.
@@ -20,7 +56,7 @@ def create_data_init(*folder_paths:str):
     print('initializing..')
 
     for path in folder_paths:
-        label_path = os.path.join(path, _g.LABEL_NAME)
+        label_path = os.path.abspath(os.path.join(path, label_file_name))
         os.makedirs(path, exist_ok=True)
         if not os.path.exists(label_path): open(label_path, 'w').close()
 
@@ -98,7 +134,7 @@ def save_gesture(data, path:str, label:str, seq_length:int=30, overwrite:bool=Fa
 
     print(f'Successfully data saved. {info_message}')
 
-def get_label_num(label:str, path:str):
+def get_label_num(label_name:str, label_file_name:str, *folder_paths:str):
     """
     Return the label number for created data.
     If there is alreay exist the same label, that label number is returned.
@@ -111,25 +147,43 @@ def get_label_num(label:str, path:str):
     Returns:
         Integer that label number the created data will have.
     """
-    oldp = os.path.abspath(os.path.join(_g.OLD_DATA_FOLDER_NAME, _g.LABEL_NAME))
-    newp = os.path.abspath(os.path.join(_g.NEW_DATA_FOLDER_NAME, _g.LABEL_NAME))
     label_num = -1
+    new_label_num = 0
 
-    with open(oldp, 'r') as f1, open(newp, 'r') as f2:
-        oldln = f1.readlines()
-        newln = f2.readlines()
-        oldlnum = len(oldln)
-        newlnum = len(newln)
+    for path in folder_paths:
+        label_path = os.path.abspath(os.path.join(path, label_file_name))
 
-        for i, line in enumerate(oldln):
-            if label in line:
-                label_num = i
+        try:
+            with open(label_path, 'r') as f:
+                ln = f.readlines()
+                new_label_num += len(ln)
 
-        for i, line in enumerate(newln):
-            if label in line:
-                label_num = i        
+                for i, line in enumerate(ln):
+                    if label_name in line:
+                        label_num = i
 
-    return (label_num == -1, oldlnum + newlnum)
+        except FileNotFoundError:
+            raise FileNotFoundError(f'File is not exist: {label_path}')
+    
+    return new_label_num if label_num < 0 else label_num
+
+    # oldp = os.path.abspath(os.path.join(_gl.OLD_DATA_FOLDER_NAME, _gl.LABEL_NAME))
+    # newp = os.path.abspath(os.path.join(_gl.NEW_DATA_FOLDER_NAME, _gl.LABEL_NAME))
+    # with open(oldp, 'r') as f1, open(newp, 'r') as f2:
+    #     oldln = f1.readlines()
+    #     newln = f2.readlines()
+    #     oldlnum = len(oldln)
+    #     newlnum = len(newln)
+
+    #     for i, line in enumerate(oldln):
+    #         if label_name in line:
+    #             label_num = i
+
+    #     for i, line in enumerate(newln):
+    #         if label_name in line:
+    #             label_num = i        
+
+    # return (label_num == -1, oldlnum + newlnum)
 
 def add_label_to_gesture_list(gesture_list, label_list):
     label_data = np.tile(label_list[:, np.newaxis, np.newaxis, np.newaxis], (1, gesture_list.shape[1], gesture_list.shape[2], 1))
