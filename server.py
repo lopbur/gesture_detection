@@ -50,14 +50,16 @@ def connection():
 
 if __name__ == '__main__':
     try:
-        if _gl.
-        pm = _pc.ProcessManager()
-        pm.add_process(alias='gesture', worker=_wk.gesture_inference_worker)
-        pm.add_process(alias='window', worker=_wk.window_worker)
-        pm.link('gesture', 'window')
-        pm.start_all_process()
+        if _gl.DEVELOP_MODE:
+            cap = cv2.VideoCapture(0)
+        else:
+            pm = _pc.ProcessManager()
+            pm.add_process(alias='gesture', worker=_wk.gesture_inference_worker)
+            pm.add_process(alias='window', worker=_wk.window_worker)
+            pm.link('gesture', 'window')
+            pm.start_all_process()
 
-        socketio.run(app, debug=True,)
+            socketio.run(app, debug=True,)
     except KeyboardInterrupt:
         # pm.stop_all_process(None)
         exit()
