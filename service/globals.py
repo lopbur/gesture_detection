@@ -1,5 +1,5 @@
 # develop
-DEVELOP_MODE = True
+DEVELOP_MODE = False
 
 # declaration of regex training data file name
 FILE_PATTERN = r'seq_([a-zA-Z]+).npy'
@@ -22,7 +22,7 @@ CONFIG_PATH = './settings/default.ini'
 ##########
 from collections import namedtuple
 
-ConfigValue = namedtuple('ConfigValue', ['type', 'name', 'default']) # maybe use enum is better. consider that way.
+ConfigValue = namedtuple('ConfigValue', ['type', 'name', 'default'])
 
 # define config section keys as constants
 CLIENT_SECTION = 'CLIENT'
@@ -31,15 +31,16 @@ GESTURE_EVENT_SECTION = 'CONTROL_SETTING'
 
 # define config key and value type as tuples
 # [CLIENT]
-SHOW_LANDMARK_INFERENCE = ConfigValue(bool, 'show_landmark', 'false') # for care low performance enviroment
-SHOW_GESTURE_INFERENCE = ConfigValue(bool, 'show_gesture', 'false') # same reason
+SHOW_LANDMARK_INFERENCE = ConfigValue(bool, 'show_landmark', 'False') # for low performance enviroment
+SHOW_GESTURE_INFERENCE = ConfigValue(bool, 'show_gesture', 'False')
 
 # [MOTION_MOUSE]
-USE_MOTION_TO_ACTIVE_MOUSE_CONTROL = ConfigValue(bool, 'use_motion_to_mouse_control', 'true')
-MOTION_BASE_LANDMARK_COORDINATE = ConfigValue(int, 'motion_base_landmark_index', '0')
+USE_MOTION_TO_ACTIVE_MOUSE_CONTROL = ConfigValue(bool, 'use_motion_to_mouse_control', 'True')
+MOTION_BASE_LANDMARK_COORDINATE = ConfigValue(int, 'motion_base_landmark_index', '23')
 
 # [CONTROL_SETTING]
-USE_GESTURE_TO_ACTIVE_EVENT = ConfigValue(bool, 'use_gesture', 'true')
+USE_GESTURE_TO_ACTIVE_EVENT = ConfigValue(bool, 'use_gesture', 'True')
+STOP_MOTION_WHILE_GESTURE = ConfigValue(bool, 'stop_motion_while_gesture', 'False')
 
 # define config settings using variables and constants
 CONFIG_PRESET = {
@@ -53,5 +54,6 @@ CONFIG_PRESET = {
     ],
     GESTURE_EVENT_SECTION: [
         USE_GESTURE_TO_ACTIVE_EVENT,
+        STOP_MOTION_WHILE_GESTURE,
     ]
 }

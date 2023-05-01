@@ -1,12 +1,11 @@
 from flask import Flask
 from flask_socketio import SocketIO
 
-import multiprocessing as mtp
 import mediapipe as mp
 import numpy as np
 
 import json, cv2, os
-from service import _pc, _wk, _mg, _gl
+from service import _pc, _wk, _mg, _gl, _dio
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'm1y2S3e4C5r6E7t8'
@@ -15,10 +14,6 @@ socketio = SocketIO(app)
 
 lm = _mg.LandmarkManager(mp_hands=mp.solutions.hands,
                         mp_draws=mp.solutions.drawing_utils)
-
-def emit_message():
-    print('send to client')
-    socketio.emit('test', 'HELLO')
 
 @socketio.on('hand_stream')
 def handle_hand_stream(msg):
@@ -34,10 +29,24 @@ def handle_hand_stream(msg):
 
     joint, angle = lm.inference(image)
     if joint is not None and angle is not None:
-        socketio.emit('response_landmark', json.dumps(joint.tolist()))
         gesture_input = np.concatenate([joint.flatten(), angle], axis=0)
         pm.processes.get('window').inputs.put(joint[0])
         pm.processes.get('gesture').inputs.put(gesture_input)
+
+        socketio.emit('response_landmark', json.dumps(joint.tolist()))
+
+
+@socketio.on('update_preset')
+def handle_update_preset(msg):
+    data = json.loads(msg)
+    print(f'update_preset: received data: {data}')
+    # need implement
+
+@socketio.on('register_gesture')
+def handle_register_gesture(msg):
+    data = json.loads(msg) # get chunked data
+    print(f'register_gesture: received data: {data}')
+    # need implement
 
 @socketio.on('disconnect')
 def disconnect():
@@ -50,12 +59,16 @@ def connection():
 
 if __name__ == '__main__':
     try:
+        config = _dio.load_config(os.path.abspath(_gl.CONFIG_PATH), _gl.CONFIG_PRESET)
+        print(config)
         if _gl.DEVELOP_MODE:
-            cap = cv2.VideoCapture(0)
+            pass
         else:
             pm = _pc.ProcessManager()
+
             pm.add_process(alias='gesture', worker=_wk.gesture_inference_worker)
             pm.add_process(alias='window', worker=_wk.window_worker)
+
             pm.link('gesture', 'window')
             pm.start_all_process()
 
