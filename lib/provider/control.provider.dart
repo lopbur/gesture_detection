@@ -13,7 +13,7 @@ final isolateFlagProvider = StateProvider<bool>(
 class Control with _$Control {
   factory Control({
     // global control about camera_preview_wrapper
-    @Default(100000) int frameInterval, // get image per frame
+    @Default(16) int frameInterval, // get image per frame
     @Default(0) int rotateAngle, // camera preview angle, clockwise
     @Default(false) bool isCameraFront, // camera position
     @Default(false) bool isCameraStreamStarted, // camera stream flag

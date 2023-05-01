@@ -3,6 +3,7 @@ import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:camera/camera.dart';
+import 'package:gesture_detection/page/widget/hand_landmark_painter.dart';
 import 'package:gesture_detection/util/isolate_handler.dart';
 
 import '../provider/client.provider.dart';
@@ -20,6 +21,7 @@ class CameraPage extends ConsumerStatefulWidget {
 
 class _CameraPageState extends ConsumerState<CameraPage> {
   final IsolateUtils _isolateUtils = IsolateUtils();
+  final double imageRatio = 1.34;
 
   @override
   void initState() {
@@ -36,6 +38,7 @@ class _CameraPageState extends ConsumerState<CameraPage> {
   @override
   Widget build(BuildContext context) {
     final control = ref.watch(controlProvider);
+    final landmarkOffset = ref.watch(landmarkOffsetProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -71,18 +74,33 @@ class _CameraPageState extends ConsumerState<CameraPage> {
             flex: 1,
             child: CameraPreviewWrapper(streamHandler: cameraStreamHandler),
           ),
-          Expanded(flex: 1, child: Container())
+          Expanded(
+            flex: 1,
+            child: Stack(
+              children: [
+                Text('$landmarkOffset'),
+                _drawHands,
+              ],
+            ),
+          )
         ],
       ),
     );
   }
+
+  Widget get _drawHands => _ModelPainter(
+        customPainter: HandLandmarkPainter(
+          points: ref.watch(landmarkOffsetProvider),
+          ratio: imageRatio,
+        ),
+      );
 
   void cameraStreamHandler(CameraImage image) {
     const handler = IsolateHandler.cnvrtCMRToGrayscaleByte;
     if (ref.watch(isolateFlagProvider)) return;
     ref.watch(isolateFlagProvider.notifier).state = true;
     Future.delayed(
-      Duration(milliseconds: 30),
+      const Duration(milliseconds: 30),
       () {
         _isolateSpawn(
           handler,
@@ -118,5 +136,21 @@ class _CameraPageState extends ConsumerState<CameraPage> {
     );
 
     postCallback(await responsePort.first);
+  }
+}
+
+class _ModelPainter extends StatelessWidget {
+  const _ModelPainter({
+    required this.customPainter,
+    Key? key,
+  }) : super(key: key);
+
+  final CustomPainter customPainter;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: customPainter,
+    );
   }
 }

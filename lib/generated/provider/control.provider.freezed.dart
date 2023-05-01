@@ -154,7 +154,7 @@ class __$$_ControlCopyWithImpl<$Res>
 @JsonSerializable()
 class _$_Control implements _Control {
   _$_Control(
-      {this.frameInterval = 100000,
+      {this.frameInterval = 16,
       this.rotateAngle = 0,
       this.isCameraFront = false,
       this.isCameraStreamStarted = false,

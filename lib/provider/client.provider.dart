@@ -1,5 +1,7 @@
+import 'dart:ui';
 import 'dart:async';
 import 'dart:convert';
+
 import 'dart:developer' as dev;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,8 +21,16 @@ enum MessageType {
   final String value;
 }
 
-final clientProvider =
-    StateNotifierProvider<ClientProvider, Client>((ref) => ClientProvider());
+class LandmarkOffsetProvider extends StateNotifier<List<Offset>> {
+  LandmarkOffsetProvider() : super([]);
+
+  void setLandmark(List<dynamic> offsetList) {
+    final newOffsetList = offsetList
+        .map((offset) => Offset(offset[0] * 320, offset[1] * 240))
+        .toList();
+    state = newOffsetList;
+  }
+}
 
 @freezed
 class Client with _$Client {
@@ -33,17 +43,14 @@ class Client with _$Client {
 }
 
 class ClientProvider extends StateNotifier<Client> {
-  ClientProvider()
-      : super(
-          Client(),
-        ) {
-    connect();
-  }
+  final LandmarkOffsetProvider landmarkOffsetProvider;
+  final StateController<String> gestureProvider;
 
-  void setupMessage(String message, Function(dynamic) handler) {
-    if (state.socket?.connected ?? false) {
-      state.socket!.on(message, handler);
-    }
+  ClientProvider({
+    required this.landmarkOffsetProvider,
+    required this.gestureProvider,
+  }) : super(Client()) {
+    connect();
   }
 
   void connect() async {
@@ -73,10 +80,19 @@ class ClientProvider extends StateNotifier<Client> {
 
         dev.log('setup default listners.');
         setupMessage('response_landmark', (msg) {
-          dev.log(msg);
+          landmarkOffsetProvider.setLandmark(jsonDecode(msg));
+        });
+        setupMessage('response_gesture', (msg) {
+          gestureProvider.state = jsonDecode(msg);
         });
       },
     );
+  }
+
+  void setupMessage(String message, Function(dynamic) handler) {
+    if (state.socket?.connected ?? false) {
+      state.socket!.on(message, handler);
+    }
   }
 
   void setOptions(Map<String, dynamic> newOptions) {
@@ -168,3 +184,17 @@ class ClientProvider extends StateNotifier<Client> {
     dev.log('dispose complete.');
   }
 }
+
+final landmarkOffsetProvider =
+    StateNotifierProvider<LandmarkOffsetProvider, List<Offset>>(
+        (ref) => LandmarkOffsetProvider());
+
+final gestureProvider = StateProvider<String>((ref) => 'None');
+
+final clientProvider = StateNotifierProvider<ClientProvider, Client>((ref) {
+  final landmarkOffsetProviderRef = ref.watch(landmarkOffsetProvider.notifier);
+  final gestureProviderRef = ref.watch(gestureProvider.notifier);
+  return ClientProvider(
+      landmarkOffsetProvider: landmarkOffsetProviderRef,
+      gestureProvider: gestureProviderRef);
+});
