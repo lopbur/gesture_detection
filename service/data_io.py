@@ -1,45 +1,33 @@
 import numpy as np
-import configparser, os
+import configparser, os, ast
 
 ###########################################
 # INIT DATA STORE PATH, LOAD OR SAVE DATA #
 ###########################################
 
-# def load_config(config_path):
-#     """
-#     parse config file to get default program setting
+def load_config(config_path, config_preset):
+    """
+    parse config file to get default program setting
 
-#     Args:
-#         config_path (```String```): file path
+    Args:
+        config_path (```String```): file path
 
-#     Return:
-#         dictionary stored config setting
-#     """
-#     config = configparser.ConfigParser()
-#     config.read(config_path)
-#     result = {}
+    Return:
+        dictionary stored config setting
+    """
+    raw_config = configparser.ConfigParser()
+    raw_config.read(config_path)
+    result = {}
 
-#     section_list = config.sections()
-#     print(section_list)
-#     for section in _gl.CONFIG:
-#         if section in section_list:
-#             for conf in section:
-#                 raw = config.get(section, conf.name)
-#                 print(raw)
-#                 parsed = None
-#                 try:
-#                     if isinstance(conf.type, bool):
-#                         parsed = bool(raw)
-#                     elif isinstance(conf.type, int):
-#                         parsed = int(raw)
-#                     elif isinstance(conf.type, str):
-#                         parsed = str(raw)
-
-#                     result[config.name] = parsed
-#                 except ValueError:
-#                     raise ValueError(f'Invalid value')
-                    
-#     return result
+    for section, configs in config_preset.items():
+        result[section] = {}
+        for config in configs:
+            raw_config_value = raw_config.get(section, config.name, fallback=config.default)
+            try:                    
+                result[section][config.name] = config.type(ast.literal_eval(raw_config_value))
+            except:
+                raise ValueError(f'Error has occured while parsed raw config value to right type. {config.name}: {raw_config_value}')       
+    return result
 
 def create_data_init(label_file_name:str, *folder_paths:str):
     """
