@@ -1,5 +1,5 @@
 # develop
-DEVELOP_MODE = True
+DEVELOP_MODE = False
 
 # declaration of regex training data file name
 FILE_PATTERN = r'seq_([a-zA-Z]+).npy'

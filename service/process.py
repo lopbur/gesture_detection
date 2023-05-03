@@ -1,18 +1,30 @@
+from collections import namedtuple
 import multiprocessing as mtp
+
+def tuple_append(v:tuple, a):
+    return 
+
+process_argument = namedtuple('prcargs', ['input', 'output', 'args'])
 
 class ProcessManager:
     def __init__(self):
         self.processes = {}
 
-    def add_process(self, alias, worker, inputs:tuple = None, outputs:tuple = None):
-        if inputs is None:
-            inputs = ()
-        if outputs is None:
-            outputs = ()
-        new_process = Process(worker=worker,
-                              inputs=inputs,
-                              outputs=outputs)
+    def add_process(self, alias, worker, inputs:tuple=(), outputs:tuple=(), args:tuple=()):
+        process_args = [inputs, outputs, args]
+        new_process = Process(worker=worker, args=process_args)
         self.processes[alias] = new_process
+
+    def add_io(self, alias, io:str):
+        try:    
+            if alias not in self.processes:
+                raise AttributeError
+            if 'i' in io:
+                self.processes[alias].args[0] = self.processes[alias].args[0] + (mtp.Queue(),)
+            if 'o' in io:
+                self.processes[alias].args[1] = self.processes[alias].args[1] + (mtp.Queue(),)
+        except AttributeError:
+            raise KeyError(f'Attribute {alias} is not found')
 
     def link(self, source, destination, link=None, keep_exist=True):
         linked = link if link is not None else mtp.Queue()
@@ -20,16 +32,16 @@ class ProcessManager:
             if source not in self.processes and destination not in self.processes:
                 raise KeyError
             if keep_exist:
-                old_dest_inputs = self.processes[destination].inputs
-                old_source_outputs = self.processes[source].outputs
-                self.processes[destination].inputs = tuple(list(old_dest_inputs).insert(linked))
-                self.processes[source].outputs = tuple(list(old_source_outputs).insert(linked))
+                self.processes[destination].args[0] = self.processes[destination].args[0] + (linked,)
+                self.processes[source].args[1] = self.processes[source].args[1] + (linked,)
+                print(f'Create link {source}->{destination} with keep exist queue')
             else:
-                self.processes[destination].inputs = self.processes[source].outputs = (linked,)
+                self.processes[destination].args[0] = self.processes[source].args[1] = (linked,)
+                print(f'Create link {source}->{destination} with remove exist queue')
         except KeyError:
-            raise KeyError(f'One of key is not founded in process lists while create link {source} -> {destination}')
+            raise KeyError(f'One of key is not founded in process lists while create link {source}->{destination}')
         except Exception as e:
-            print(e)
+            print(f'Some Error has occured whild create link {source}->{destination}: {e}')
     
     def get_process_by_alias(self, alias):
         if alias in self.processes:
@@ -39,17 +51,18 @@ class ProcessManager:
     
     def get_connection_by_alias(self, alias):
         if alias in self.processes:
-            return self.processes[alias].inputs, self.processes[alias].outputs
+            return self.processes[alias].args[0], self.processes[alias].args[0]
         else:
             None
 
     def put(self, alias, data):
         if alias in self.processes:
-            self.processes[alias].inputs.put(data)
+            self.processes[alias].args[0][0].put(data)
 
     def start_all_process(self):
         for process in self.processes.values():
-            process.build()
+            print(f'Starting process: {process.worker}\n with: {process.args}')
+            process.build(use_daemon=True)
             process.start()
 
     def stop_all_process(self, stop_message):
@@ -57,20 +70,23 @@ class ProcessManager:
             process.stop(stop_message)
             
 class Process:
-    def __init__(self, worker:function, args:tuple=None):
+    def __init__(self, worker, args:list=[]):
         self.worker = worker
         self.args = args
         self.process = None
     
     def build(self, use_daemon:bool=False):
-        self.process = mtp.Process(target=self.worker, args=self.args)
+        _args = ()
+        for arg in self.args:
+            _args = _args + (arg,)
+        self.process = mtp.Process(target=self.worker, args=_args)
         self.process.daemon = use_daemon
     
     def start(self):
         self.process.start()
     
     def stop(self, stop_message):
-        self.inputs.put(stop_message)
+        self.args[0].put(stop_message)
         self.process.join()
         self.process = None
         self.args = None
