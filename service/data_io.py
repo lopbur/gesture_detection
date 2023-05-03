@@ -26,7 +26,7 @@ def load_config(config_path, config_preset):
             try:                    
                 result[section][config.name] = config.type(ast.literal_eval(raw_config_value))
             except:
-                raise ValueError(f'Error has occured while parsed raw config value to right type. {config.name}: {raw_config_value}')       
+                raise ValueError(f'Error has occured while parsed raw config value to right type. {config.name}: {raw_config_value}')
     return result
 
 def create_data_init(label_file_name:str, *folder_paths:str):
