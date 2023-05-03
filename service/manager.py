@@ -58,28 +58,25 @@ class GestureManager:
     
 class ControlManager:
     def __init__(self,
-                 pre_presets:dict={},
+                 event_list:dict={},
                  window_size = (320, 240)):
-        self.presets = pre_presets
-        self.window_size = window_size 
+        self.event_list = event_list
+        self.window_size = window_size
 
-    def update_preset(self, alias, actions):
-        self.presets[alias] = actions
-
-    def delete_preset(self, alias):
-        self.presets.pop(alias)
+    def set_event_list(self, new_event_list):
+        self.event_list = new_event_list
 
     def move_mouse(self, x, y):
         resized_x = x * self.window_size[0]
         resized_y = y * self.window_size[1]
         gui.moveTo(resized_x, resized_y, _pause=False)
 
-    def run_actions(self, alias):
-        if hasattr(self.presets, alias):
-            # {'actions':[(gui.keypress, 'k'), (gui.mouseclick, 'left'), ...], ...}
-            actions = getattr(self.presets, alias)
-            for action in actions:
-                method = action[0]
-                args = action[1]
-                if callable(method):
-                    method(args)
+    # def run_actions(self, alias):
+    #     if hasattr(self.presets, alias):
+    #         # {'actions':[(gui.keypress, 'k'), (gui.mouseclick, 'left'), ...], ...}
+    #         actions = getattr(self.presets, alias)
+    #         for action in actions:
+    #             method = action[0]
+    #             args = action[1]
+    #             if callable(method):
+    #                 method(args)
