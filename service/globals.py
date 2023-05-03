@@ -22,38 +22,36 @@ CONFIG_PATH = './settings/default.ini'
 ##########
 from collections import namedtuple
 
-ConfigValue = namedtuple('ConfigValue', ['type', 'name', 'default'])
+CONFIG = namedtuple('config', ['dtype', 'name', 'default', ], defaults=[bool, 'nonameconfig', False])
 
 # define config section keys as constants
 CLIENT_SECTION = 'CLIENT'
-MOTION_MOUSE_SECTION = 'MOTION_MOUSE'
-GESTURE_EVENT_SECTION = 'CONTROL_SETTING'
+CONTROL_SECTION = 'CONTROL_SETTING'
+GESTURE_EVENT_SECTION = 'GESTURE_EVENT'
 
 # define config key and value type as tuples
 # [CLIENT]
-SHOW_LANDMARK_INFERENCE = ConfigValue(bool, 'show_landmark', 'False') # for low performance enviroment
-SHOW_GESTURE_INFERENCE = ConfigValue(bool, 'show_gesture', 'False')
+SHOW_LANDMARK_INFERENCE = CONFIG(dtype=bool, name='show_landmark', default='False') # for low performance enviroment
+SHOW_GESTURE_INFERENCE = CONFIG(dtype=bool, name='show_gesture', default='False')
 
 # [MOTION_MOUSE]
-USE_MOTION_TO_ACTIVE_MOUSE_CONTROL = ConfigValue(bool, 'use_motion_to_mouse_control', 'True')
-MOTION_BASE_LANDMARK_COORDINATE = ConfigValue(int, 'motion_base_landmark_index', '23')
+USE_MOTION_TO_ACTIVE_MOUSE_CONTROL = CONFIG(dtype=bool, name='use_motion_to_mouse_control', default='True')
+MOTION_BASE_LANDMARK_COORDINATE = CONFIG(dtype=int, name='motion_base_landmark_index', default='23')
 
 # [CONTROL_SETTING]
-USE_GESTURE_TO_ACTIVE_EVENT = ConfigValue(bool, 'use_gesture', 'True')
-STOP_MOTION_WHILE_GESTURE = ConfigValue(bool, 'stop_motion_while_gesture', 'False')
-
+USE_GESTURE_TO_ACTIVE_EVENT = CONFIG(dtype=bool, name='use_gesture', default='True')
+STOP_MOTION_WHILE_GESTURE = CONFIG(dtype=bool, name='stop_motion_while_gesture', default='False')
 # define config settings using variables and constants
 CONFIG_PRESET = {
     CLIENT_SECTION: [
         SHOW_LANDMARK_INFERENCE,
         SHOW_GESTURE_INFERENCE,
     ],
-    MOTION_MOUSE_SECTION: [
+    CONTROL_SECTION: [
+        USE_GESTURE_TO_ACTIVE_EVENT,
         USE_MOTION_TO_ACTIVE_MOUSE_CONTROL,
+        STOP_MOTION_WHILE_GESTURE,
         MOTION_BASE_LANDMARK_COORDINATE,
     ],
-    GESTURE_EVENT_SECTION: [
-        USE_GESTURE_TO_ACTIVE_EVENT,
-        STOP_MOTION_WHILE_GESTURE,
-    ]
+    GESTURE_EVENT_SECTION: [],
 }

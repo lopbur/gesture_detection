@@ -1,5 +1,6 @@
 import numpy as np
 import configparser, os, ast
+from . import globals as _gl
 
 ###########################################
 # INIT DATA STORE PATH, LOAD OR SAVE DATA #
@@ -8,6 +9,10 @@ import configparser, os, ast
 def load_config(config_path, config_preset):
     """
     parse config file to get default program setting
+
+    Returns in the form of a config preset received as a parameter,
+    and if there is no corresponding option in the actual config file,
+    the default value defined in the preset is used.
 
     Args:
         config_path (```String```): file path
@@ -20,13 +25,29 @@ def load_config(config_path, config_preset):
     result = {}
 
     for section, configs in config_preset.items():
+        if not raw_config.has_section(section):
+            print(f'{section} section not founded. create new section')
+            raw_config.add_section(section)
+
         result[section] = {}
-        for config in configs:
-            raw_config_value = raw_config.get(section, config.name, fallback=config.default)
-            try:                    
-                result[section][config.name] = config.type(ast.literal_eval(raw_config_value))
-            except:
-                raise ValueError(f'Error has occured while parsed raw config value to right type. {config.name}: {raw_config_value}')
+
+        if section != _gl.GESTURE_EVENT_SECTION:
+            for config in configs:
+                if not raw_config.has_option(section, config.name):
+                    print(f'{section}:{config.name} has not founded. create new option')
+                    raw_config.set(section, config.name, config.default)
+
+                raw_config_value = raw_config.get(section, config.name)
+                result[section][config.name] = config.dtype(ast.literal_eval(raw_config_value))
+        else: # if current section is _gl.GESTURE_EVENT_SECTION (load gesture event lists)
+            for config, value in raw_config.items(section):
+                result[section][config] = value.split(',')
+
+    try:
+        with open(config_path, 'w') as f:
+            raw_config.write(f)
+    except:
+        print('Some error has occured while write config')
     return result
 
 def create_data_init(label_file_name:str, *folder_paths:str):
