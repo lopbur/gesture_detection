@@ -6,9 +6,9 @@ class ProcessManager:
 
     def add_process(self, alias, worker, inputs:tuple = None, outputs:tuple = None):
         if inputs is None:
-            inputs = (mtp.Queue())
+            inputs = ()
         if outputs is None:
-            outputs = (mtp.Queue())
+            outputs = ()
         new_process = Process(worker=worker,
                               inputs=inputs,
                               outputs=outputs)
@@ -20,8 +20,10 @@ class ProcessManager:
             if source not in self.processes and destination not in self.processes:
                 raise KeyError
             if keep_exist:
-                self.processes[destination].inputs += (linked,)
-                self.processes[source].outputs += (linked,)
+                old_dest_inputs = self.processes[destination].inputs
+                old_source_outputs = self.processes[source].outputs
+                self.processes[destination].inputs = tuple(list(old_dest_inputs).insert(linked))
+                self.processes[source].outputs = tuple(list(old_source_outputs).insert(linked))
             else:
                 self.processes[destination].inputs = self.processes[source].outputs = (linked,)
         except KeyError:
@@ -53,24 +55,22 @@ class ProcessManager:
     def stop_all_process(self, stop_message):
         for process in self.processes:
             process.stop(stop_message)
-
+            
 class Process:
-    def __init__(self, worker, inputs:tuple, outputs:tuple):
+    def __init__(self, worker:function, args:tuple=None):
         self.worker = worker
-        self.inputs = inputs
-        self.outputs = outputs
-
-    def build(self):
-        self.process = mtp.Process(target=self.worker, args=(self.inputs, self.outputs))
-
+        self.args = args
+        self.process = None
+    
+    def build(self, use_daemon:bool=False):
+        self.process = mtp.Process(target=self.worker, args=self.args)
+        self.process.daemon = use_daemon
+    
     def start(self):
-        self.process.daemon = True
         self.process.start()
-
+    
     def stop(self, stop_message):
         self.inputs.put(stop_message)
         self.process.join()
         self.process = None
-        self.input = None
-        self.output = None
-
+        self.args = None

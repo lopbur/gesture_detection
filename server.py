@@ -12,9 +12,6 @@ app.config['SECRET_KEY'] = 'm1y2S3e4C5r6E7t8'
 
 socketio = SocketIO(app)
 
-lm = _mg.LandmarkManager(mp_hands=mp.solutions.hands,
-                        mp_draws=mp.solutions.drawing_utils)
-
 @socketio.on('hand_stream')
 def handle_hand_stream(msg):
     data = json.loads(msg)
@@ -60,18 +57,22 @@ def connection():
 if __name__ == '__main__':
     try:
         config = _dio.load_config(os.path.abspath(_gl.CONFIG_PATH), _gl.CONFIG_PRESET)
-        print(config)
-        if _gl.DEVELOP_MODE:
-            pass
+        lm = _mg.LandmarkManager(mp_hands=mp.solutions.hands,
+                                mp_draws=mp.solutions.drawing_utils)
+        pm = _pc.ProcessManager()
+
+        pm.add_process(alias='gesture', worker=_wk.gesture_inference_worker)
+        pm.add_process(alias='window', worker=_wk.window_worker)
+
+        pm.link('gesture', 'window', keep_exist=True)
+        pm.start_all_process()
+
+        if _gl.DEVELOP_MODE: # Run on only python with opencv2
+            cap = cv2.VideoCapture(0)
+            while(True):
+                ret, frame = cap.read()
+
         else:
-            pm = _pc.ProcessManager()
-
-            pm.add_process(alias='gesture', worker=_wk.gesture_inference_worker)
-            pm.add_process(alias='window', worker=_wk.window_worker)
-
-            pm.link('gesture', 'window')
-            pm.start_all_process()
-
             socketio.run(app, debug=True,)
     except KeyboardInterrupt:
         # pm.stop_all_process(None)
