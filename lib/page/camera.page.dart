@@ -53,34 +53,42 @@ class _CameraPageState extends ConsumerState<CameraPage> {
             onPressed: () => ref.watch(controlProvider.notifier).rotateCamera(),
             icon: const Icon(Icons.rotate_right),
           ),
-          IconButton(
-            onPressed: () {
-              ref.watch(controlProvider.notifier).toggleCameraStream();
-            },
-            icon: Icon(
-                control.isCameraStreamStarted ? Icons.stop : Icons.play_arrow),
-          ),
-          IconButton(
-            onPressed: () {
-              ref.watch(clientProvider.notifier).reconnect();
-            },
-            icon: const Icon(Icons.refresh),
-          )
         ],
       ),
       body: Column(
         children: [
           Expanded(
             flex: 1,
-            child: CameraPreviewWrapper(streamHandler: cameraStreamHandler),
+            child: Stack(
+              children: [
+                CameraPreviewWrapper(streamHandler: cameraStreamHandler),
+                _drawHands,
+                Text('$landmarkOffset')
+              ],
+            ),
+          ),
+          const Divider(
+            thickness: 2,
           ),
           Expanded(
             flex: 1,
-            child: Stack(
-              children: [
-                Text('$landmarkOffset'),
-                _drawHands,
-              ],
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  FloatingActionButton(
+                    onPressed: ref.watch(clientProvider.notifier).reconnect,
+                    child: const Icon(Icons.refresh),
+                  ),
+                  FloatingActionButton(
+                    onPressed:
+                        ref.watch(controlProvider.notifier).toggleCameraStream,
+                    child: Icon(control.isCameraStreamStarted
+                        ? Icons.stop
+                        : Icons.play_arrow),
+                  )
+                ],
+              ),
             ),
           )
         ],
