@@ -61,7 +61,6 @@ class ProcessManager:
 
     def start_all_process(self):
         for process in self.processes.values():
-            print(f'Starting process: {process.worker}\n with: {process.args}')
             process.build(use_daemon=True)
             process.start()
 

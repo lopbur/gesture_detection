@@ -36,10 +36,10 @@ def handle_hand_stream(msg):
         socketio.emit('response_landmark', json.dumps([]))
 
 
-@socketio.on('update_preset')
-def handle_update_preset(msg):
+@socketio.on('update_event_list')
+def handle_update_event_list(msg):
     data = json.loads(msg)
-    print(f'update_preset: received data: {data}')
+    print(f'update_event_list handler received: {data}')
     # need implement
 
 @socketio.on('register_gesture')
@@ -63,31 +63,28 @@ if __name__ == '__main__':
         GESTURE_LABEL_PATH = os.path.abspath(os.path.join(_gl.OLD_DATA_FOLDER_NAME, _gl.LABEL_NAME))
         
         # ['clenching', 'foldindex', 'foldindexmiddle', 'touchindex', 'touchmiddle']
-        gesture_list = _dio.load_gesture_label(GESTURE_LABEL_PATH)
+        gesture_name, gesture_label = _dio.load_gesture_label(GESTURE_LABEL_PATH)
         config = _dio.load_config(CONFIG_PATH, _gl.CONFIG_PRESET)
-        gesture_event_list = config[_gl.GESTURE_EVENT_SECTION]
-        print(gesture_event_list)
-        # pm = _pc.ProcessManager()
-        # lm = _mg.LandmarkManager(mp_hands=mp.solutions.hands,
-        #                         mp_draws=mp.solutions.drawing_utils)
+        gesture_event = config[_gl.GESTURE_EVENT_SECTION]
+        pm = _pc.ProcessManager()
+        lm = _mg.LandmarkManager(mp_hands=mp.solutions.hands,
+                                mp_draws=mp.solutions.drawing_utils)
         
         
-        # pm.add_process(alias='gesture', worker=_wk.gesture_inference_worker, args=(gesture_event_list, gesture_list))
-        # pm.add_process(alias='window', worker=_wk.window_worker)
+        pm.add_process(alias='gesture', worker=_wk.gesture_inference_worker, args=(gesture_name,))
+        pm.add_process(alias='window', worker=_wk.window_worker, args=(gesture_event,))
 
-        #  # for pass gesture inference result to window worker control
-        # pm.link(source="gesture", destination="window")
+         # for pass gesture inference result to window worker control
+        pm.link(source="gesture", destination="window")
 
-        # # Input for landmark data,
-        # # Output for result of gesture inference
-        # pm.add_io(alias='gesture', io='io') 
+        # Input for landmark data,
+        # Output for result of gesture inference
+        pm.add_io(alias='gesture', io='i')
 
-        # # Input for pass user configuration changed
-        # pm.add_io(alias='window', io='i')
-        # pm.start_all_process()
+        pm.start_all_process()
 
-        # gesture_process = pm.processes.get('gesture')
-        # window_process = pm.processes.get('window')
+        gesture_process = pm.processes.get('gesture')
+        window_process = pm.processes.get('window')
         
         # Run on only python with opencv2
         if _gl.DEVELOP_MODE:
