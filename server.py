@@ -12,9 +12,6 @@ app.config['SECRET_KEY'] = 'm1y2S3e4C5r6E7t8'
 
 socketio = SocketIO(app)
 
-lm = _mg.LandmarkManager(mp_hands=mp.solutions.hands,
-                        mp_draws=mp.solutions.drawing_utils)
-
 @socketio.on('hand_stream')
 def handle_hand_stream(msg):
     data = json.loads(msg)
@@ -30,16 +27,19 @@ def handle_hand_stream(msg):
     joint, angle = lm.inference(image)
     if joint is not None and angle is not None:
         gesture_input = np.concatenate([joint.flatten(), angle], axis=0)
-        pm.processes.get('window').inputs.put(joint[0])
-        pm.processes.get('gesture').inputs.put(gesture_input)
+
+        pm.processes.get('window').args[0][0].put({'landmark': joint[0]})
+        pm.processes.get('gesture').args[0][0].put(gesture_input)
 
         socketio.emit('response_landmark', json.dumps(joint.tolist()))
+    else:
+        socketio.emit('response_landmark', json.dumps([]))
 
 
-@socketio.on('update_preset')
-def handle_update_preset(msg):
+@socketio.on('update_event_list')
+def handle_update_event_list(msg):
     data = json.loads(msg)
-    print(f'update_preset: received data: {data}')
+    print(f'update_event_list handler received: {data}')
     # need implement
 
 @socketio.on('register_gesture')
@@ -59,22 +59,42 @@ def connection():
 
 if __name__ == '__main__':
     try:
-        config = _dio.load_config(os.path.abspath(_gl.CONFIG_PATH), _gl.CONFIG_PRESET)
-        print(config)
+        CONFIG_PATH = os.path.abspath(_gl.CONFIG_PATH)
+        GESTURE_LABEL_PATH = os.path.abspath(os.path.join(_gl.OLD_DATA_FOLDER_NAME, _gl.LABEL_NAME))
+        
+        # ['clenching', 'foldindex', 'foldindexmiddle', 'touchindex', 'touchmiddle']
+        gesture_name, gesture_label = _dio.load_gesture_label(GESTURE_LABEL_PATH)
+        config = _dio.load_config(CONFIG_PATH, _gl.CONFIG_PRESET)
+        gesture_event = config[_gl.GESTURE_EVENT_SECTION]
+        pm = _pc.ProcessManager()
+        lm = _mg.LandmarkManager(mp_hands=mp.solutions.hands,
+                                mp_draws=mp.solutions.drawing_utils)
+        
+        
+        pm.add_process(alias='gesture', worker=_wk.gesture_inference_worker, args=(gesture_name,))
+        pm.add_process(alias='window', worker=_wk.window_worker, args=(gesture_event,))
+
+         # for pass gesture inference result to window worker control
+        pm.link(source="gesture", destination="window")
+
+        # Input for landmark data,
+        # Output for result of gesture inference
+        pm.add_io(alias='gesture', io='i')
+
+        pm.start_all_process()
+
+        gesture_process = pm.processes.get('gesture')
+        window_process = pm.processes.get('window')
+        
+        # Run on only python with opencv2
         if _gl.DEVELOP_MODE:
-            pass
+            cap = cv2.VideoCapture(0)
+            while(True):
+                ret, frame = cap.read()
         else:
-            pm = _pc.ProcessManager()
-
-            pm.add_process(alias='gesture', worker=_wk.gesture_inference_worker)
-            pm.add_process(alias='window', worker=_wk.window_worker)
-
-            pm.link('gesture', 'window')
-            pm.start_all_process()
-
             socketio.run(app, debug=True,)
     except KeyboardInterrupt:
-        # pm.stop_all_process(None)
+        pm.stop_all_process(None)
         exit()
 
 # @socketio.on('register_gesture')
