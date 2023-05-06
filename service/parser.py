@@ -1,6 +1,8 @@
 from cv2 import cvtColor, imdecode, COLOR_YUV2BGR_I420, COLOR_YUV2RGB_I420, IMREAD_COLOR
 import argparse
 import numpy as np
+import time
+import pyautogui as gui
 
 from service import _gl
 
@@ -99,3 +101,34 @@ def byte_to_CV2_list(byte):
 
         data.append(img)
     return data
+
+
+def send_event(event_list:list=[]):
+    count=0
+    for e in range(0,len(event_list)):
+        time.sleep(0.5)
+        if count !=0:
+            count-=1
+        else:
+            exp = event_list[e][0]
+            if event_list[e]=='+esc':
+                gui.keyDown('esc')   
+                gui.keyUp('esc')
+            elif exp == '+': # 앞에 + 있을 경우, 키 누름 액션
+                if event_list[e+1][0] == '+':
+                    count+=1
+                    if event_list[e+2][0] == '+':
+                        count+=1
+                        gui.hotkey(event_list[e][1:],event_list[e+1][1:],event_list[e+2][1:])
+                    else:
+                        if len(event_list[e+2])>=2:
+                            gui.hotkey(event_list[e][1:],event_list[e+1][1:])
+                        else:
+                            gui.hotkey(event_list[e][1:],event_list[e+1][1:],event_list[e+2])
+                else:
+                    if len(event_list[e+1])>=2:
+                        gui.hotkey(event_list[e][1:],event_list[e+1])
+                    else:
+                        gui.hotkey(event_list[e][1:])
+            else: # 앞에 + 없을 경우, 일반 문자열 typing
+                gui.typewrite(event_list[e])
