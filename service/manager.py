@@ -21,7 +21,6 @@ class LandmarkManager:
         if result.multi_hand_landmarks is not None:
             for res in result.multi_hand_landmarks:
                 joint, angle = self.get_joint_from_landmarks_and_angle(res.landmark)
-                self.mp_draws.draw_landmarks(image, res, self.mp_hands.HAND_CONNECTIONS)
         return joint, angle
 
     def get_joint_from_landmarks_and_angle(self, landmarks):
