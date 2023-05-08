@@ -35,10 +35,12 @@ def handle_hand_stream(msg):
         - landmarks[[1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15, 17, 18, 19], :]
         v = v / np.linalg.norm(v, axis=1, keepdims=True) + 1e-8
         angle = np.degrees(np.arctan2(np.linalg.norm(np.cross(v[:-1], v[1:]), axis=1), np.einsum('ij,ij->i', v[:-1], v[1:])))
+        
+        miq.put((landmarks,None))
         giq.put((landmarks, angle))
-    
+
     try:
-        print(goq.get_nowait())
+        print(moq.get_nowait())
     except:
         pass
 
@@ -72,14 +74,20 @@ if __name__ == '__main__':
         min_detection_confidence=0.5,  # 손 인식 확률의 최소 기준값
         min_tracking_confidence=0.5)  # 손 추적 확률의 최소 기준값
     
+    miq, moq = multiprocessing.Queue(), multiprocessing.Queue()
     giq = multiprocessing.Queue()
-    goq = multiprocessing.Queue()
-    print(f'{giq}, {goq}')
-    gesture_process = multiprocessing.Process(target=_wk.gesture_worker, args=(giq, goq))
+    m_args = {
+        'gesture_event_list': config[_gl.GESTURE_EVENT_SECTION],
+    }
+    motion_process = multiprocessing.Process(target=_wk.motion_worker, args=(miq, moq, m_args))
+    motion_process.daemon = True
+
+    gesture_process = multiprocessing.Process(target=_wk.gesture_worker, args=(giq, miq, []))
     gesture_process.daemon = True
 
     
     try:
+        motion_process.start()
         gesture_process.start()
         socketio.run(app, debug=True,)
     except KeyboardInterrupt:
